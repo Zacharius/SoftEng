@@ -29,7 +29,7 @@ public class LoginActivity extends AppCompatActivity
 
 
     //executed when user presses SMA button on Login Page
-    private void onEnterCredentials(View v)
+    public void onEnterCredentials(View v)
     {
 
         //grab EditTexts from Login Page
