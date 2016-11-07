@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent" android:layout_height="match_parent"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
     android:paddingTop="16dp"
     android:paddingBottom="16dp"
     android:paddingLeft="16dp"
@@ -8,33 +10,27 @@
 
 
     <TextView
-        android:text="@string/delete_received"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="100dp"
-        android:layout_alignParentLeft="true"
-        android:id="@+id/delete_received"/>
+        android:text="@string/delete_received"/>
     <Spinner
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="100dp"
-        android:layout_alignParentRight="true"
-        android:layout_toRightOf="@+id/delete_received"
-        android:id="@+id/spinner" />
-    <TextView
-        android:text="@string/delete_sent"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="100dp"
-        android:layout_below="@+id/spinner"
-        android:layout_alignParentLeft="true"
-        android:id="@+id/delete_sent"/>
-    <Spinner
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="100dp"
-        android:layout_below="@+id/spinner"
-        android:layout_alignParentRight="true"
-        android:layout_toRightOf="@+id/delete_sent"
+        android:layout_marginBottom="100dp"
+        android:id="@+id/spinner"
+        android:entries="@array/deleteOptions"
+        android:prompt="@string/delete_received"
         />
-</RelativeLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/delete_sent"/>
+    <Spinner
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="100dp"
+        android:entries="@array/deleteOptions"
+        android:prompt="@string/delete_sent"
+        />
+</LinearLayout>

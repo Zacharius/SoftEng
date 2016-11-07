@@ -58,6 +58,12 @@ public class ContactListActivity extends AppCompatActivity {
         });
     }
 
+    public void onClickOptions(View v)
+    {
+        Intent intent = new Intent(getApplicationContext(), OptionsActivity.class);
+        startActivity(intent);
+    }
+
 
 
 

@@ -38,6 +38,7 @@
         android:layout_weight="15"
         android:layout_gravity="right"
         android:id="@+id/button"
-        android:text="Send"/>
+        android:text="Send"
+       />
 
 </LinearLayout>

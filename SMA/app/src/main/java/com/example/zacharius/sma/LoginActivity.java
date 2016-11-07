@@ -53,7 +53,7 @@ public class LoginActivity extends AppCompatActivity
             if(ServerComm.checkCredentials(id, password))
             {
                 //if pass credential check, go to contact list page
-                Intent i = new Intent(v.getContext(), LoginActivity.class);
+                Intent i = new Intent(v.getContext(), ContactListActivity.class);
                 startActivity(i);
 
             }
