@@ -39,4 +39,7 @@ captures/
 # Keystore files
 *.jks
 
-
+# SMA Server Project meta files and class files
+SMAServer/.idea
+SMAServer/SMAServer.iml
+SMAServer/out/
