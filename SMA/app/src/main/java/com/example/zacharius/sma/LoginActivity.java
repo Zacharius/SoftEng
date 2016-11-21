@@ -1,5 +1,6 @@
 package com.example.zacharius.sma;
 
+import android.content.Context;
 import android.content.Intent;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
@@ -17,6 +18,8 @@ public class LoginActivity extends AppCompatActivity
     private static boolean logIn;//tells us whether user is currently able to attempt login
     private static int secondsLeft_logout;//how many more seconds will user be logged out
 
+    public static Context context;
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -31,6 +34,8 @@ public class LoginActivity extends AppCompatActivity
     //executed when user presses SMA button on Login Page
     public void onEnterCredentials(View v)
     {
+
+        context = getApplicationContext();
 
         //grab EditTexts from Login Page
         EditText idView =  (EditText) findViewById(R.id.ID);
@@ -53,7 +58,7 @@ public class LoginActivity extends AppCompatActivity
             if(ServerComm.checkCredentials(id, password))
             {
                 //if pass credential check, go to contact list page
-                Intent i = new Intent(v.getContext(), LoginActivity.class);
+                Intent i = new Intent(v.getContext(), ServerTestActivity.class);
                 startActivity(i);
 
             }
