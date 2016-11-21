@@ -7,6 +7,8 @@ import java.net.*;
  * Created by elijah on 11/13/2016.
  */
 public class SMAServer {
+    // TODO: should be modified to an agreed-upon port prior to compilation or program modified
+    // to change via command line
     private static int portNumber = 4269;
     private static ServerSocket serverSocket;
     private static Socket clientSocket = null;
