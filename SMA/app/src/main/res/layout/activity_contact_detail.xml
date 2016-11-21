@@ -38,6 +38,7 @@
         android:layout_gravity="right"
         android:layout_toRightOf="@+id/editMessage"
         android:id="@+id/button"
-        android:text="Send"/>
+        android:text="Send"
+       />
 
 </TableLayout>
