@@ -3,6 +3,8 @@ package com.example.zacharius.sma;
 import android.os.AsyncTask;
 import android.widget.Toast;
 
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -38,20 +40,30 @@ public class ServerComm
 
         public void writeServer(String msg)
         {
-
+            JSONObject object = new JSONObject();
             try
             {
+                object.put("messageType", "1");
+                object.put("messageID", "2");
+                object.put("senderID", "3");
+                object.put("content", msg);
                 if(server != null){
-                    PrintWriter write = new PrintWriter(server.getOutputStream());
-                    write.println(msg);
+                    PrintWriter write = new PrintWriter(server.getOutputStream(), true);
+                    System.out.println(object.toString());
+                    write.println(object.toString());
+
+                    Toast.makeText(LoginActivity.context,
+                            "write to Server: " + msg,
+                            Toast.LENGTH_SHORT)
+                            .show();
+                }
+                else{
+                    System.out.print("Server object is null");
                 }
 
-                Toast.makeText(LoginActivity.context,
-                        "write to Server: " + msg,
-                        Toast.LENGTH_SHORT)
-                        .show();
 
-            } catch (IOException e)
+
+            } catch (Exception e)
             {
                 e.printStackTrace();
             }
@@ -62,7 +74,7 @@ public class ServerComm
         @Override
         protected Void doInBackground(Void... voids)
         {
-            Socket server = null;
+
             try
             {
                 server = new Socket(address, port);

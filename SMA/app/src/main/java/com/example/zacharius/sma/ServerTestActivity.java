@@ -19,7 +19,7 @@ public class ServerTestActivity extends AppCompatActivity
 
     public void onConnectServer(View v)
     {
-        server = new ServerComm.StartServer("198.27.65.177", 6969);
+        server = new ServerComm.StartServer("198.27.65.177", 4269);
         server.execute();
     }
 
