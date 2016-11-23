@@ -11,9 +11,6 @@ public class SMAGenericNetworkMessage {
     private Date timestamp;
     private String senderID;
 
-    /*
-     * The constructor requires that all fields be filled before a message object is created.
-     */
     public SMAGenericNetworkMessage(int messageType, int messageID, Date timestamp, String senderID){
         this.messageType = messageType;
         this.messageID = messageID;

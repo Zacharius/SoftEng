@@ -14,10 +14,11 @@ public class SMAProtocolHandler {
         this.gson = gson;
     }
 
+    // returns an SMANetworkResponse appropriate to message content
     public SMANetworkResponse authenticateUser(String message){
         SMAGenericNetworkMessage incoming = gson.fromJson(message, SMAGenericNetworkMessage.class);
 
-        // is this an authentication request?
+        // is this an authentication request
         if(incoming.getMessageType() != 1){
             return new SMANetworkResponse(
                     2,

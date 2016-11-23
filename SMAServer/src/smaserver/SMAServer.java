@@ -7,15 +7,18 @@ import java.net.*;
  * Created by elijah on 11/13/2016.
  */
 public class SMAServer {
-    // TODO: should be modified to an agreed-upon port prior to compilation or program modified
-    // to change via command line
+    // TODO: modify to take port number via command line
     private static int portNumber = 4269;
     private static ServerSocket serverSocket;
     private static Socket clientSocket = null;
+
     public static void main(String args[])throws IOException{
-        if(!openSocket()){
+        // check if we opened socket and exit if it failed
+        if(!openSocket()) {
             System.exit(1);
         }
+
+        // call function to listen on open socket
         listen();
     }
 
@@ -32,6 +35,8 @@ public class SMAServer {
     }
 
     private static void listen()throws IOException{
+        // listen on open socket in a loop, accept connections, and spin off threads
+        // when one is open
         while(true){
             clientSocket = serverSocket.accept();
             Thread myThread = new Thread(new SMAClientConnection(clientSocket));
