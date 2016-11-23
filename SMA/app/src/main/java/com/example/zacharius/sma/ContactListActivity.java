@@ -2,6 +2,8 @@ package com.example.zacharius.sma;
 
 
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -13,7 +15,8 @@ import android.widget.ListView;
 import java.util.ArrayList;
 
 public class ContactListActivity extends AppCompatActivity {
-
+    DatabaseHelper mDbHelper;
+    SQLiteDatabase db;
     ListView contactsView;
     ArrayAdapter<String> list;
 
@@ -22,10 +25,48 @@ public class ContactListActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_contact_list);
 
+        //get context of the database and create/open for reading.
+        mDbHelper = new DatabaseHelper(getApplicationContext());
+        db = mDbHelper.getReadableDatabase();
+
+        // setup database
+
+        // define a projection that specifies which columns you
+        // actually use after this query
+        String[] projection = {
+
+                DatabaseContract.ContactTable.COLUMN_USERID,
+                DatabaseContract.ContactTable.COLUMN_NICKNAME,
+
+        };
+
+        // query the data base for contacts
+        Cursor c = db.query(
+                DatabaseContract.ContactTable.TABLE_NAME,           // the table to query
+                projection,                                         // the columns to return
+                null,                                               // the columns for the WHERE clause
+                null,                                               // the values for the WHERE clause
+                null,                                               // grouping of the rows
+                null,                                               // filter by row
+                null                                                // sort order
+                );
+
+
         //grab Contacts ListView
         contactsView = (ListView) findViewById(R.id.contacts);
 
-        //sample contancts
+        // add contacts to an array list
+        int numberOfContacts = c.getCount();
+        final ArrayList<String> contactList =  new ArrayList<>();
+        c.moveToFirst();
+        for(int i = 0; i < numberOfContacts; i++){
+            String nextContact = c.getString(c.getColumnIndexOrThrow(DatabaseContract.ContactTable.COLUMN_NICKNAME));
+            c.moveToNext();
+            contactList.add(nextContact);
+        }
+
+
+      /*  //sample contancts
         final ArrayList<String> contactList = new ArrayList<String>();
         contactList.add("Zach");
         contactList.add("Elijah");
@@ -36,7 +77,10 @@ public class ContactListActivity extends AppCompatActivity {
         contactList.add("Enrique");
         contactList.add("Peju");
         contactList.add("Alex");
-        contactList.add("Connor");
+        contactList.add("Connor"); */
+
+
+
 
         //bind contactList to list, an ArrayAdapter
         list = new ArrayAdapter<String>(getApplicationContext(), android.R.layout.simple_list_item_1, contactList);
