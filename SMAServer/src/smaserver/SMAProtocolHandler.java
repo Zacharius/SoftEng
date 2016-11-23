@@ -26,11 +26,25 @@ public class SMAProtocolHandler {
                     "BAD REQUEST: server expects message type 1 and received type " + incoming.getMessageType()
             );
         }
-        return new SMANetworkResponse(
-                2,
-                incoming.getMessageID(),
-                true,
-                null
-                );
+
+        // TODO: the following needs to be replaced with calls to the server database and should check:
+        //     -does a user exist
+        //     -does the username and password match
+        SMAAuthenticationNetworkMessage request = gson.fromJson(message, SMAAuthenticationNetworkMessage.class);
+        if(request.getPassword().equals("goodpassword")) {
+            return new SMANetworkResponse(
+                    2,
+                    incoming.getMessageID(),
+                    true,
+                    null
+            );
+        } else {
+            return new SMANetworkResponse(
+                    2,
+                    incoming.getMessageID(),
+                    false,
+                    "USERNAME PASSWORD MISMATCH: username and password do not match"
+            );
+        }
     }
 }
