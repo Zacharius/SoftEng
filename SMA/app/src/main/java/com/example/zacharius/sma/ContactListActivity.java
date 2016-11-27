@@ -1,6 +1,7 @@
 package com.example.zacharius.sma;
 
 
+import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 public class ContactListActivity extends AppCompatActivity {
     DatabaseHelper mDbHelper;
     SQLiteDatabase db;
+   // SQLiteDatabase dbw;
     ListView contactsView;
     ArrayAdapter<String> list;
 
@@ -28,9 +30,16 @@ public class ContactListActivity extends AppCompatActivity {
         //get context of the database and create/open for reading.
         mDbHelper = new DatabaseHelper(getApplicationContext());
         db = mDbHelper.getReadableDatabase();
-
+    /*    db = mDbHelper.getWritableDatabase();
         // setup database
+        ContentValues values = new ContentValues();
+        values.put(DatabaseContract.ContactTable.COLUMN_USERID, "zack");
+        values.put(DatabaseContract.ContactTable.COLUMN_NICKNAME, "zack");
+       // values.put(DatabaseContract.ContactTable.COLUMN_KEY, "fyc");
 
+        //insert the new Row, returning the primary key value of the new row
+        long newRowId = db.insert(DatabaseContract.ContactTable.TABLE_NAME, null, values);
+        db = mDbHelper.getReadableDatabase();*/
         // define a projection that specifies which columns you
         // actually use after this query
         String[] projection = {
@@ -57,13 +66,14 @@ public class ContactListActivity extends AppCompatActivity {
 
         // add contacts to an array list
         int numberOfContacts = c.getCount();
-        final ArrayList<String> contactList =  new ArrayList<>();
+        final ArrayList<String> contactList =  new ArrayList<String>();
         c.moveToFirst();
         for(int i = 0; i < numberOfContacts; i++){
             String nextContact = c.getString(c.getColumnIndexOrThrow(DatabaseContract.ContactTable.COLUMN_NICKNAME));
             c.moveToNext();
             contactList.add(nextContact);
         }
+        c.close();
 
 
       /*  //sample contancts
