@@ -32,7 +32,8 @@ public class SMAProtocolHandler {
         //     -does a user exist
         //     -does the username and password match
         SMAAuthenticationNetworkMessage request = gson.fromJson(message, SMAAuthenticationNetworkMessage.class);
-        if(request.getPassword().equals("goodpassword")) {
+        if(request.getPassword().
+		equals(DBAccess.getPassword(request.getSenderID())) ) {
             return new SMANetworkResponse(
                     2,
                     incoming.getMessageID(),
