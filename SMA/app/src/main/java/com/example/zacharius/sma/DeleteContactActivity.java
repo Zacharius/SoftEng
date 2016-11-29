@@ -6,6 +6,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.SparseBooleanArray;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -21,7 +23,8 @@ public class DeleteContactActivity extends AppCompatActivity {
     ListView contactsView;
     DatabaseHelper mDbHelper;
     SQLiteDatabase db;
-
+    ArrayAdapter<String> list;
+    final ArrayList<String>   contactList = new ArrayList<String>();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -67,7 +70,7 @@ public class DeleteContactActivity extends AppCompatActivity {
 
         // add contacts to an array list
         int numberOfContacts = c.getCount();
-        final ArrayList<String> contactList = new ArrayList<String>();
+
         c.moveToFirst();
         for (int i = 0; i < numberOfContacts; i++) {
             String nextContact = c.getString(c.getColumnIndexOrThrow(DatabaseContract.ContactTable.COLUMN_NICKNAME));
@@ -76,7 +79,30 @@ public class DeleteContactActivity extends AppCompatActivity {
         }
         c.close();
 
-       ArrayAdapter<String> list = new ArrayAdapter<String>(getApplicationContext(), android.R.layout.simple_list_item_multiple_choice, contactList);
+        list = new ArrayAdapter<String>(getApplicationContext(), android.R.layout.simple_list_item_multiple_choice, contactList);
         contactsView.setAdapter(list);
     }
+
+    // Delete Button
+
+    public void onClickTrash(View v) {
+        String[] removeContacts = new String[1];
+        //db = mDbHelper.getWritableDatabase();
+        int len = list.getCount();
+        SparseBooleanArray checked = contactsView.getCheckedItemPositions();
+        for (int i = 0; i < len; i++) {
+            if (checked.get(i)) {
+                String item = contactList.get(i);
+                removeContacts[0] = item;
+                db.delete(DatabaseContract.ContactTable.TABLE_NAME, DatabaseContract.ContactTable.COLUMN_NICKNAME + "  LIKE ? ", removeContacts);
+            }
+        }
+
+
+        Intent intent = new Intent(getApplicationContext(), OptionsActivity.class);
+        startActivity(intent);
+
+    }
+
+
 }

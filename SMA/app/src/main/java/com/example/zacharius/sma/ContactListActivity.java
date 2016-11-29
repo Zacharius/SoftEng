@@ -30,16 +30,16 @@ public class ContactListActivity extends AppCompatActivity {
         //get context of the database and create/open for reading.
         mDbHelper = new DatabaseHelper(getApplicationContext());
         db = mDbHelper.getReadableDatabase();
-    /*    db = mDbHelper.getWritableDatabase();
+       /* db = mDbHelper.getWritableDatabase();
         // setup database
         ContentValues values = new ContentValues();
-        values.put(DatabaseContract.ContactTable.COLUMN_USERID, "zack");
-        values.put(DatabaseContract.ContactTable.COLUMN_NICKNAME, "zack");
+        values.put(DatabaseContract.ContactTable.COLUMN_USERID, "elijah");
+        values.put(DatabaseContract.ContactTable.COLUMN_NICKNAME, "elijah");
        // values.put(DatabaseContract.ContactTable.COLUMN_KEY, "fyc");
 
         //insert the new Row, returning the primary key value of the new row
         long newRowId = db.insert(DatabaseContract.ContactTable.TABLE_NAME, null, values);
-        db = mDbHelper.getReadableDatabase();*/
+        db = mDbHelper.getReadableDatabase(); */
         // define a projection that specifies which columns you
         // actually use after this query
         String[] projection = {
@@ -112,6 +112,10 @@ public class ContactListActivity extends AppCompatActivity {
         });
     }
 
+
+    /*
+    Options button
+     */
     public void onClickOptions(View v)
     {
         Intent intent = new Intent(getApplicationContext(), OptionsActivity.class);
