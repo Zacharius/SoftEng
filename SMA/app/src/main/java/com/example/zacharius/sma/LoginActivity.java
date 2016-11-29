@@ -2,6 +2,7 @@ package com.example.zacharius.sma;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -19,15 +20,25 @@ public class LoginActivity extends AppCompatActivity
     private static int secondsLeft_logout;//how many more seconds will user be logged out
 
     public static Context context;
+    private ServerComm server;
+
+    public  static int credentials = 0;//0 - waiting for auth response
+                               //1 - auth came back true
+                               //2 - auth came back false
+    public static String errMsg;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+        context = getApplicationContext();
 
         loginAttempts = 0;
         logIn = true;
+
+        server = new ServerComm("198.27.65.177", 4269);
+        server.execute();
     }
 
 
@@ -35,7 +46,6 @@ public class LoginActivity extends AppCompatActivity
     public void onEnterCredentials(View v)
     {
 
-        context = getApplicationContext();
 
         //grab EditTexts from Login Page
         EditText idView =  (EditText) findViewById(R.id.ID);
@@ -49,50 +59,12 @@ public class LoginActivity extends AppCompatActivity
         idView.setText("");
         passwordView.setText("");
 
-        //check if user is able to attempt login
-        if(logIn)
-        {
+        System.out.println("beggining login action");
 
-            //will eventually check user's entered credentials.
-            //currently just returns true
-            if(ServerComm.checkCredentials(id, password))
-            {
-                //if pass credential check, go to contact list page
-                Intent i = new Intent(v.getContext(), ContactListActivity.class);
-                startActivity(i);
+        Login login = new Login();
+        login.execute(id, password);
 
-            }
-            //if fail credential check
-            //increments loginAttempt, and checks whether user can attempt login again
-            //if not, prevent user from logging in for set amount of time.
-            else if(++loginAttempts > MAX_LOGIN_ATTEMPTS)
-            {
-                logIn = false;
-                secondsLeft_logout = LOGOUT_TIME;
-                (new Thread(new LogoutTimer())).start();
-                Toast.makeText(v.getContext(),
-                        "Invalid login, you have exceeded max login attempt limit and will be logged out for: " + (LOGOUT_TIME/60) + " minutes",
-                        Toast.LENGTH_SHORT)
-                        .show();
-            }
-            //ask user to try login attempt again
-            else
-            {
-            Toast.makeText(v.getContext(),
-                    "Invalid login, try again\n Attempts Left: " + (loginAttempts - MAX_LOGIN_ATTEMPTS),
-                    Toast.LENGTH_SHORT)
-                    .show();
-            }
-        }
-        //tell user how long it is till he can login again
-        else
-        {
-            Toast.makeText(v.getContext(),
-                    "You are currently suspended from system\n Seconds Left : " + secondsLeft_logout ,
-                    Toast.LENGTH_SHORT)
-                    .show();
-        }
-
+        System.out.println("Login started");
     }
 
     //allow timer to check seconds left
@@ -113,10 +85,92 @@ public class LoginActivity extends AppCompatActivity
         LoginActivity.logIn = login;
     }
 
+    public class Login extends AsyncTask<String, Void, Boolean>
+    {
 
 
+        String loginMsg;
+
+        private Login(){}
+
+        @Override
+        protected Boolean doInBackground(String... strings)
+        {
+            String id = strings[0];
+            String password = strings[1];
+
+            System.out.println("do in background");
+
+            if(logIn){
+
+                System.out.println("login true");
+                server.checkCredentials(id, password);
+
+                //while(credentials == 0)
+                //{
+
+                //};
+
+                if(credentials == 1)
+                {
+                    return true;
 
 
+                } else if(++loginAttempts > MAX_LOGIN_ATTEMPTS)
+                {
+                    logIn = false;
+                    secondsLeft_logout = LOGOUT_TIME;
+                    (new Thread(new LogoutTimer())).start();
+                    loginMsg = "Invalid login, you have exceeded max login attempt limit and will be logged out for: " + (LOGOUT_TIME/60) + " minutes";
+                }
+                //ask user to try login attempt again
+                else
+                {
+                    loginMsg = "Invalid login, try again\n Attempts Left: " + (loginAttempts - MAX_LOGIN_ATTEMPTS);
+                    publishProgress();
+                }
+            }
+            //tell user how long it is till he can login again
+            else
+            {
+                loginMsg = "You are currently suspended from system\n Seconds Left : " + secondsLeft_logout;
+                publishProgress();
+            }
 
+            return false;
 
+        }
+
+        @Override
+        protected void onProgressUpdate(Void... values)
+        {
+            super.onProgressUpdate(values);
+
+            Toast.makeText(context,
+                    loginMsg ,
+                    Toast.LENGTH_SHORT)
+                    .show();
+        }
+
+        @Override
+        protected void onPostExecute(Boolean result)
+        {
+            super.onPostExecute(result);
+
+            if(result)
+            {
+                Intent i = new Intent(context, ContactListActivity.class);
+                startActivity(i);
+            }
+
+        }
+    }
 }
+
+
+
+
+
+
+
+
