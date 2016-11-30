@@ -11,7 +11,7 @@ import java.net.Socket;
  */
 public class SMAServerTest {
     public static void main(String args[])throws IOException{
-        String hostName = "127.0.0.1";
+        String hostName = "198.27.65.177";
         int portNumber = 4269;
         try(
             Socket clientSocket = new Socket(hostName, portNumber);
