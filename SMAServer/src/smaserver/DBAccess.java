@@ -1,4 +1,4 @@
-//package smaserver;
+package smaserver;
 import java.sql.*;
 import java.util.*;
 
