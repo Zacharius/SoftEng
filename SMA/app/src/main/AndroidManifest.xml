@@ -19,6 +19,10 @@
         </activity>
         <activity android:name=".ContactListActivity"/>
         <activity android:name=".ContactDetailActivity"/>
+        <activity android:name=".OptionsActivity"/>
+        <activity android:name=".DeleteContactActivity"/>
+        <activity android:name=".ServerTestActivity">
+        </activity>
 
         <service
             android:name=".ServerComm$ServerListener"

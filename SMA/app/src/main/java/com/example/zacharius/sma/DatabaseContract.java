@@ -10,8 +10,8 @@ public class DatabaseContract
     private DatabaseContract() {}
     public static final String Create_ContactTable =
             "CREATE TABLE " + ContactTable.TABLE_NAME + " ( "
-            + ContactTable.COLUMN_USERID + " VARCHAR(10) "
-            + ContactTable.COLUMN_NICKNAME + " VARCHAR(20) "
+            + ContactTable.COLUMN_USERID + " VARCHAR(10), "
+            + ContactTable.COLUMN_NICKNAME + " VARCHAR(20), "
             + ContactTable.COLUMN_KEY + " TEXT)";
 
     public static final String Create_MessageTable =

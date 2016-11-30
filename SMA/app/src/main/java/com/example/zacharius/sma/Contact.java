@@ -2,6 +2,10 @@ package com.example.zacharius.sma;
 
 import java.util.ArrayList;
 
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+
+
 /**
  * Created by jakew on 11/21/2016.
  */
@@ -11,10 +15,14 @@ public class Contact {
     private ArrayList message = new ArrayList();
     private String contactID;
     private String nickName;
+    private DatabaseHelper mDbHelper;
+    private SQLiteDatabase db;
 
-    public Contact(String id, String name){
+    public Contact(String id, String name, DatabaseHelper dbhelp, SQLiteDatabase dataB){
         this.contactID = id;
         this.nickName = name;
+        this.mDbHelper = dbhelp;
+        this.db = dataB;
         setMessage(); // only here for a test, should be removed or changed.
     }
 
@@ -31,12 +39,30 @@ public class Contact {
     }
 
     public void setMessage(){
-        message.add("now");
-        message.add("this moment is set");
-        message.add("sleep insane");
-        message.add("dream on the inside, dream on my own");
-        message.add("once escaped star filled road");
-        message.add("my head will not rest on this pillow");
-        }
+        String[] projection = {
+                DatabaseContract.MessageTable.COLUMN_COMPOSERID,
+                DatabaseContract.MessageTable.COLUMN_CONTENT
+        };
 
+        String selection = DatabaseContract.MessageTable.COLUMN_COMPOSERID + "= ?";
+        String[] selectionArgs = { contactID };
+
+        Cursor c = db.query(
+                DatabaseContract.MessageTable.TABLE_NAME,
+                projection,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                null
+        );
+
+        c.moveToFirst();
+        int num_message = c.getCount();
+        for(int i = 0; i< num_message; i++){
+            String mess = c.getString(c.getColumnIndexOrThrow(DatabaseContract.MessageTable.COLUMN_CONTENT));
+            message.add(mess);
+        }
     }
+
+}

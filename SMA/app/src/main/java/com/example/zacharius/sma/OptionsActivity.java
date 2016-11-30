@@ -1,7 +1,9 @@
 package com.example.zacharius.sma;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
@@ -16,6 +18,7 @@ public class OptionsActivity extends AppCompatActivity {
     Spinner delete_send;
     ArrayAdapter<CharSequence> delete_adapter;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -29,7 +32,10 @@ public class OptionsActivity extends AppCompatActivity {
         delete_rec.setAdapter(delete_adapter);
 
     }
-
+    public void onClickDelete(View v){
+        Intent intent = new Intent(getApplicationContext(), DeleteContactActivity.class);
+        startActivity(intent);
+    }
 
 
 
