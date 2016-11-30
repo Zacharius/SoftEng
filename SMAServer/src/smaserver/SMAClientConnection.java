@@ -35,27 +35,35 @@ public class SMAClientConnection implements Runnable {
     public void run(){
         printServerLogMessage("client connected, waiting for authentication request");
         try{
-            // first we need to get the authentication message and check if this was successful
+            // Attempt to authenticate user and listen for incoming requests if successful.
             if(authenticateUser()){
                 printServerLogMessage("user authenticated successfully");
-
-                // the primary thread loop waits for input and should pass them to the SMAProtocolHandler
-                // to get an appropriate response
-                String inputLine;
-                while((inputLine = in.readLine()) != null) {
-                    SMAGenericNetworkMessage request = gson.fromJson(inputLine, SMAGenericNetworkMessage.class);
-                    request.print();
-                    // TODO: ProtocolHandler should return a valid response based on message and take action
-                    // based on each request
-                    out.println(gson.toJson(request));
-                }
+                printServerLogMessage("session started for " + clientID);
+                listenForIncomingRequests();
             }
         }catch(IOException e){
-            // System.out.print(e.getStackTrace());
+            // It tried to get away but we caught it. Hopefully this won't happen again.
         }
         printServerLogMessage("connection terminated");
     }
 
+    public void listenForIncomingRequests()throws IOException{
+        // While we're receiving input, print a log message, get a response from the SMAProtocolHandler,
+        // print a log message for the response, and write the response to the Socket.
+        String inputLine, outputLine;
+        while((inputLine = in.readLine()) != null) {
+            printClientLogMessage("says, \"" + inputLine + "\"");
+            outputLine = handler.getResponse(inputLine, clientID);
+            printServerLogMessage("says to client: " + clientID + ", \"" + outputLine + "\"");
+            out.println(outputLine);
+        }
+    }
+
+    /**
+     * Return true if a user authenticates successfully and set the cientID field.
+     * @return boolean
+     * @throws IOException
+     */
     private boolean authenticateUser()throws IOException{
         boolean authenticated = false;
         String inputLine;
@@ -66,14 +74,28 @@ public class SMAClientConnection implements Runnable {
             authenticated = response.getStatus();
             if (!authenticated) {
                 printServerLogMessage("client failed to authenticate");
+            } else if(authenticated){
+                clientID =  gson.fromJson(inputLine, SMAAuthenticationNetworkMessage.class).getSenderID();
             }
         }
         return authenticated;
     }
 
+    /**
+     * print log messages with the [SERVER] tag to console
+     * TODO: possibly create a separate logging Thread to ensure console is clean while
+     * administrators are interacting with it
+     * @param msg
+     */
     private void printServerLogMessage(String msg){
         DateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         Date date = new Date();
         System.out.println("[" + sdf.format(date) + "][SERVER]: " + msg);
+    }
+
+    public void printClientLogMessage(String msg){
+        DateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+        Date date = new Date();
+        System.out.println("[" + sdf.format(date) + "][CLIENT: " + clientID + "]: " + msg);
     }
 }
