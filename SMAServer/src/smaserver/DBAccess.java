@@ -127,7 +127,7 @@ public class DBAccess {
 		}
 		catch (Exception e) {
 			System.out.println(e);
-			change = false;
+			changed = false;
 		}
 		finally {
 			if (statement != null) {
@@ -175,6 +175,7 @@ public class DBAccess {
 					con.close();
 				} catch (Exception e) {}
 			}
+			return changed;
 		}
 	}
 }

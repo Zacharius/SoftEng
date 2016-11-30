@@ -72,13 +72,20 @@ public class SMAProtocolHandler {
 
                 // Make a call to the DBAccess class to update password using the clientID parameter
                 // and newPassword.getNewPassword() and check if it succeeded.
-                if(true){
+                if(DBAccess.changePassword(clientID, newPassword.getNewPassword())){
                     status = true;
                 } else {
-                    reason = "The reason the password couldn't be updated goes here.";
+                    reason = "failed to update user password.";
                 }
                 break;
-
+            case 8:
+                SMAChangePublicKeyRequest newPublicKey = gson.fromJson(input, SMAChangePublicKeyRequest.class);
+                if(DBAccess.changePubKey(clientID, newPublicKey.getPublicKey())){
+                    status = true;
+                } else {
+                    reason = "failed to update public key";
+                }
+                break;
             // The default action right now is to simply return the request.
             default:
                 return input;
