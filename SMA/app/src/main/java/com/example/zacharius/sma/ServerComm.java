@@ -1,6 +1,10 @@
 package com.example.zacharius.sma;
 
+import android.app.IntentService;
+import android.content.BroadcastReceiver;
+import android.content.Intent;
 import android.os.AsyncTask;
+import android.util.Log;
 import android.widget.Toast;
 
 import org.json.JSONException;
@@ -17,19 +21,20 @@ import java.util.logging.SocketHandler;
 /**
  * Created by zacharius on 10/23/16.
  */
-public class ServerComm extends AsyncTask<Void, Void, Void>
+public class ServerComm
 {
 
     private static Socket server;
-    String address;
-    int port;
-    String serverMsg;
+    private static String address;
+    private static int port;
 
     public ServerComm(String address, int port)
     {
         this.address = address;
         this.port = port;
+
     }
+
 
     public void writeServer(JSONObject object)
     {
@@ -58,7 +63,7 @@ public class ServerComm extends AsyncTask<Void, Void, Void>
     public void checkCredentials(String id, String password)
     {
 
-        System.out.println("Checking credentials");
+        Log.d("ServerComm","Checking credentials");
         JSONObject object = new JSONObject();
 
         try{
@@ -77,83 +82,82 @@ public class ServerComm extends AsyncTask<Void, Void, Void>
 
     }
 
-    @Override
-    protected Void doInBackground(Void... voids)
+    public static class ServerListener extends IntentService
     {
+        String serverMsg;
 
-        try
+        public ServerListener()
         {
+            super("Server Listener");
+        }
 
-
-            try{
-                server = new Socket(address, port);
-            }catch (ConnectException e)
+        @Override
+        protected void onHandleIntent(Intent intent)
+        {
+            while(1==1)
             {
-                e.printStackTrace();
-                serverMsg = "can't connect to server";
-                return null;
-
-            }
-            serverMsg = "Connected to Server";
-            publishProgress();
-            BufferedReader read = new BufferedReader((new InputStreamReader(server.getInputStream())));
-            PrintWriter write = new PrintWriter(server.getOutputStream());
-
-            String readLine;
-
-
-            while ((serverMsg = read.readLine()) != null)
-            {
-                publishProgress();
-
-                try{
-                    JSONObject object = new JSONObject(serverMsg);
-                    int messageType = object.getInt("messageType");
-                    String messageID = object.getString("messageID");
-
-                    switch(messageType)
-                    {
-                        case 2:
-                            boolean status = object.getBoolean("status");
-                            if(status)
-                            {
-                                LoginActivity.credentials = 1;
-                            }
-                            if(!status)
-                            {
-                                LoginActivity.credentials = -1;
-                                LoginActivity.errMsg = object.getString("reason");
-                            }
-                    }
-                }catch(JSONException e)
+                try
+                {
+                    server = new Socket(address, port);
+                    break;
+                } catch (Exception e)
                 {
                     e.printStackTrace();
                 }
+            }
+            Log.d("ServerComm", "Connected to Server");
+            publishProgress("Connected to Server");
+            try
+            {
+                    BufferedReader read = new BufferedReader((new InputStreamReader(server.getInputStream())));
+                    while ((serverMsg = read.readLine()) != null)
+                    {
+                        publishProgress(serverMsg);
+                        Log.d("ServerComm", serverMsg);
 
 
+                        JSONObject object = new JSONObject(serverMsg);
+                        int messageType = object.getInt("messageType");
+                        String messageID = object.getString("messageID");
+
+                        switch (messageType)
+                        {
+                            case 2:
+                                boolean status = object.getBoolean("status");
+                                if (status)
+                                {
+                                    LoginActivity.credentials = 1;
+                                }
+                                if (!status)
+                                {
+                                    LoginActivity.credentials = -1;
+                                    LoginActivity.errMsg = object.getString("reason");
+                                }
+                        }
+                    }
+            }catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+
+        }
+
+
+        private void publishProgress(final String serverMsg)
+        {
+            if(LoginActivity.context != null)
+            {
+                Toast.makeText(LoginActivity.context,
+                        serverMsg,
+                        Toast.LENGTH_SHORT)
+                        .show();
             }
 
 
-        } catch (IOException e)
-        {
-            e.printStackTrace();
         }
-        return null;
+
+
     }
-
-    @Override
-    protected void onProgressUpdate(Void... voids)
-    {
-    super.onProgressUpdate(voids);
-
-    Toast.makeText(LoginActivity.context,
-            "server says: " + serverMsg,
-            Toast.LENGTH_SHORT)
-            .show();
-    }
-
-
-
 
     public static Socket getServer()
     {
@@ -164,4 +168,6 @@ public class ServerComm extends AsyncTask<Void, Void, Void>
     {
         ServerComm.server = server;
     }
+
+
 }

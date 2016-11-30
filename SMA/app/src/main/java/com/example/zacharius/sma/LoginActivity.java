@@ -1,11 +1,13 @@
 package com.example.zacharius.sma;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -20,6 +22,7 @@ public class LoginActivity extends AppCompatActivity
     private static int secondsLeft_logout;//how many more seconds will user be logged out
 
     public static Context context;
+
     private ServerComm server;
 
     public  static int credentials = 0;//0 - waiting for auth response
@@ -32,13 +35,16 @@ public class LoginActivity extends AppCompatActivity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+
         context = getApplicationContext();
 
         loginAttempts = 0;
         logIn = true;
 
         server = new ServerComm("198.27.65.177", 4269);
-        server.execute();
+        Intent serverListener = new Intent(getApplicationContext(), ServerComm.ServerListener.class);
+        getApplicationContext().startService(serverListener);
     }
 
 
@@ -59,12 +65,14 @@ public class LoginActivity extends AppCompatActivity
         idView.setText("");
         passwordView.setText("");
 
-        System.out.println("beggining login action");
+        Log.d("Login activity", "beggining login action");
 
         Login login = new Login();
         login.execute(id, password);
 
-        System.out.println("Login started");
+        Intent serverListener = new Intent(getApplicationContext(), ServerComm.ServerListener.class);
+        getApplicationContext().startService(serverListener);
+
     }
 
     //allow timer to check seconds left
@@ -85,6 +93,18 @@ public class LoginActivity extends AppCompatActivity
         LoginActivity.logIn = login;
     }
 
+    public void showToast(final String toast)
+    {
+        runOnUiThread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                Toast.makeText(getApplicationContext(), toast, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
     public class Login extends AsyncTask<String, Void, Boolean>
     {
 
@@ -98,44 +118,54 @@ public class LoginActivity extends AppCompatActivity
         {
             String id = strings[0];
             String password = strings[1];
+            
 
-            System.out.println("do in background");
+            if(server.getServer() != null)
+            {
+                if(logIn){
 
-            if(logIn){
+                    Log.d("login","login true");
+                    server.checkCredentials(id, password);
 
-                System.out.println("login true");
-                server.checkCredentials(id, password);
+                    while(credentials == 0)
+                    {
 
-                //while(credentials == 0)
-                //{
+                    };
 
-                //};
-
-                if(credentials == 1)
-                {
-                    return true;
+                    if(credentials == 1)
+                    {
+                        Log.d("Login", "login passed");
+                        return true;
 
 
-                } else if(++loginAttempts > MAX_LOGIN_ATTEMPTS)
-                {
-                    logIn = false;
-                    secondsLeft_logout = LOGOUT_TIME;
-                    (new Thread(new LogoutTimer())).start();
-                    loginMsg = "Invalid login, you have exceeded max login attempt limit and will be logged out for: " + (LOGOUT_TIME/60) + " minutes";
+                    } else if(++loginAttempts > MAX_LOGIN_ATTEMPTS)
+                    {
+                        logIn = false;
+                        secondsLeft_logout = LOGOUT_TIME;
+                        (new Thread(new LogoutTimer())).start();
+                        loginMsg = "Invalid login, you have exceeded max login attempt limit and will be logged out for: " + (LOGOUT_TIME/60) + " minutes";
+                    }
+                    //ask user to try login attempt again
+                    else
+                    {
+                        loginMsg = "Invalid login, try again\n Attempts Left: " + (MAX_LOGIN_ATTEMPTS - loginAttempts );
+                        publishProgress();
+                    }
                 }
-                //ask user to try login attempt again
+                //tell user how long it is till he can login again
                 else
                 {
-                    loginMsg = "Invalid login, try again\n Attempts Left: " + (loginAttempts - MAX_LOGIN_ATTEMPTS);
+                    loginMsg = "You are currently suspended from system\n Seconds Left : " + secondsLeft_logout;
                     publishProgress();
                 }
             }
-            //tell user how long it is till he can login again
             else
             {
-                loginMsg = "You are currently suspended from system\n Seconds Left : " + secondsLeft_logout;
+                loginMsg = "can't login; not connected to server";
                 publishProgress();
             }
+
+
 
             return false;
 
@@ -145,11 +175,15 @@ public class LoginActivity extends AppCompatActivity
         protected void onProgressUpdate(Void... values)
         {
             super.onProgressUpdate(values);
+            Log.d("Login", loginMsg);
+            if(LoginActivity.context != null)
+            {
+                Toast.makeText(context,
+                        loginMsg ,
+                        Toast.LENGTH_SHORT)
+                        .show();
+            }
 
-            Toast.makeText(context,
-                    loginMsg ,
-                    Toast.LENGTH_SHORT)
-                    .show();
         }
 
         @Override
@@ -159,8 +193,16 @@ public class LoginActivity extends AppCompatActivity
 
             if(result)
             {
-                Intent i = new Intent(context, ContactListActivity.class);
-                startActivity(i);
+                runOnUiThread(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        Intent i = new Intent(context, ContactListActivity.class);
+                        startActivity(i);
+                    }
+                });
+
             }
 
         }

@@ -20,6 +20,11 @@
         <activity android:name=".ContactListActivity"/>
         <activity android:name=".ContactDetailActivity"/>
 
+        <service
+            android:name=".ServerComm$ServerListener"
+            android:exported="false"/>
+
+
     </application>
 
 </manifest>
