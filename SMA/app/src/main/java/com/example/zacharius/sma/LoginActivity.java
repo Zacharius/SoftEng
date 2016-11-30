@@ -1,8 +1,11 @@
 package com.example.zacharius.sma;
 
 import android.app.Activity;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
@@ -12,6 +15,16 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.SecureRandom;
+
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+
 public class LoginActivity extends AppCompatActivity
 {
     private final int MAX_LOGIN_ATTEMPTS = 5; //max number of times a user can attempt to login
@@ -20,6 +33,9 @@ public class LoginActivity extends AppCompatActivity
     private int loginAttempts; //number of times user has tried to login
     private static boolean logIn;//tells us whether user is currently able to attempt login
     private static int secondsLeft_logout;//how many more seconds will user be logged out
+
+    private DatabaseHelper helper;
+    private SQLiteDatabase db;
 
     public static Context context;
 
@@ -105,7 +121,7 @@ public class LoginActivity extends AppCompatActivity
         });
     }
 
-    public class Login extends AsyncTask<String, Void, Boolean>
+    public class Login extends AsyncTask<String, Void, Integer>
     {
 
 
@@ -114,19 +130,21 @@ public class LoginActivity extends AppCompatActivity
         private Login(){}
 
         @Override
-        protected Boolean doInBackground(String... strings)
+        protected Integer doInBackground(String... strings)
         {
             String id = strings[0];
             String password = strings[1];
             
-
+            //ensure we are connected to server
             if(server.getServer() != null)
             {
+                //ensure user is not currently locked out
                 if(logIn){
 
                     Log.d("login","login true");
                     server.checkCredentials(id, password);
 
+                    //wait for response from server
                     while(credentials == 0)
                     {
 
@@ -135,7 +153,59 @@ public class LoginActivity extends AppCompatActivity
                     if(credentials == 1)
                     {
                         Log.d("Login", "login passed");
-                        return true;
+
+                        //check if keys have been generated yet
+                        helper = new DatabaseHelper(getApplicationContext());
+                        db = helper.getReadableDatabase();
+                        Cursor cursor = db.query(true,
+                                DatabaseContract.ContactTable.TABLE_NAME,
+                                new String[]{DatabaseContract.ContactTable.COLUMN_KEY},
+                                null,null,null, null, null, null);
+                        db.close();
+
+                        //generate keys because they havent been generated yet
+                        if(cursor == null)
+                        {
+                            KeyPair keyPair = Crypto.keygen();
+
+                            PublicKey pub = keyPair.getPublic();
+                            PrivateKey pri = keyPair.getPrivate();
+
+                            String pubString = Crypto.publicKeyToString(pub);
+                            String priString = Crypto.privateKeyToString(pri);
+
+                            //write keys to local database as strings
+                            db = helper.getWritableDatabase();
+
+                            ContentValues value = new ContentValues();
+                            value.put(DatabaseContract.ContactTable.COLUMN_USERID, "USER_PUB");
+                            value.put(DatabaseContract.ContactTable.COLUMN_KEY, pubString);
+                            if(db.insert(DatabaseContract.ContactTable.TABLE_NAME, null, value) == -1)
+                            {
+                                Log.d("Login", "Trouble inserting into database");
+                            }
+
+
+                            value = new ContentValues();
+                            value.put(DatabaseContract.ContactTable.COLUMN_USERID, "USER_PRI");
+                            value.put(DatabaseContract.ContactTable.COLUMN_KEY, priString);
+                            if(db.insert(DatabaseContract.ContactTable.TABLE_NAME, null, value) == -1)
+                            {
+                                Log.d("Login", "Trouble inserting into database");
+                            }
+
+                            //give public key to server
+                            server.pushPublicKey(pubString);
+
+                            return 2;
+
+                        }
+                        else
+                        {
+                            return 1;
+                        }
+
+
 
 
                     } else if(++loginAttempts > MAX_LOGIN_ATTEMPTS)
@@ -167,7 +237,7 @@ public class LoginActivity extends AppCompatActivity
 
 
 
-            return false;
+            return -1;
 
         }
 
@@ -187,11 +257,15 @@ public class LoginActivity extends AppCompatActivity
         }
 
         @Override
-        protected void onPostExecute(Boolean result)
+        /*parameter meaning:
+                -1: login fail
+                 1: login pass, go to ContactListActivity
+                 2: login pass, go to PasswordResetActivity*/
+        protected void onPostExecute(Integer result)
         {
             super.onPostExecute(result);
 
-            if(result)
+            if(result == 1)
             {
                 runOnUiThread(new Runnable()
                 {
@@ -203,6 +277,18 @@ public class LoginActivity extends AppCompatActivity
                     }
                 });
 
+            }
+            else if(result == 2)
+            {
+                runOnUiThread(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        Intent i = new Intent(context, ResetPasswordActivity.class);
+                        startActivity(i);
+                    }
+                });
             }
 
         }

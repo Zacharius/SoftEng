@@ -82,6 +82,41 @@ public class ServerComm
 
     }
 
+    public void pushPublicKey(String pub)
+    {
+        Log.d("ServerComm", "sending public key to server");
+
+        JSONObject json = new JSONObject();
+
+        try{
+            json.put("messageType", 8);
+            json.put("messageID", 1);
+            json.put("publicKey", pub);
+
+            writeServer(json);
+        }catch (JSONException e){
+            e.printStackTrace();
+        }
+
+    }
+
+    public void changePassword(String pass)
+    {
+        Log.d("ServerComm", "sending new password to server");
+
+        JSONObject json = new JSONObject();
+
+        try{
+            json.put("messageType", 2);
+            json.put("messageID", 1);
+            json.put("publicKey", pass);
+
+            writeServer(json);
+        }catch (JSONException e){
+            e.printStackTrace();
+        }
+    }
+
     public static class ServerListener extends IntentService
     {
         String serverMsg;
