@@ -1,4 +1,4 @@
-package smaserver;
+//package smaserver;
 import java.sql.*;
 import java.util.*;
 
@@ -7,8 +7,12 @@ public class DBAccess {
 		System.out.println("Enter user's name to get password: ");
 		Scanner in = new Scanner(System.in);
 		String user = in.nextLine();
+		System.out.println("Old Password? " + DBAccess.getPassword(user));
 		System.out.println("User exists? " + DBAccess.userExists(user));
-		System.out.println("Password? " + DBAccess.getPassword(user));
+		System.out.println("Enter user's new password: ");
+		String newpass = in.nextLine();
+		DBAccess.changePassword(user, newpass);
+		System.out.println("New Password? " + DBAccess.getPassword(user));
 		System.exit(0);
 	}
 
@@ -102,6 +106,75 @@ public class DBAccess {
 				} catch (Exception e) {}
 			}
 			return exists;
+		}
+	}
+
+	public static boolean changePassword(String user, String newpass) {
+		Connection con=null;
+		Statement statement=null;
+		ResultSet rs=null;
+		boolean changed=false;
+		
+		try {
+			Class.forName("com.mysql.jdbc.Driver");
+			con = DriverManager.getConnection(
+				"jdbc:mysql://localhost/server?autoReconnect=true&useSSL=false", "java", "lugubr!ous19m1en");
+
+			statement = con.createStatement();
+			statement.executeUpdate("UPDATE user SET Password = '" + newpass + "' WHERE UserID = '" + user + "';");
+			changed = true;
+
+		}
+		catch (Exception e) {
+			System.out.println(e);
+			change = false;
+		}
+		finally {
+			if (statement != null) {
+				try {
+					statement.close();
+				} catch (Exception e) {}
+				statement = null;
+			}
+			if (con != null) {
+				try {
+					con.close();
+				} catch (Exception e) {}
+			}
+			return changed;
+		}
+	}
+
+	public static boolean changePubKey(String user, String pubKey) {
+		Connection con=null;
+		Statement statement=null;
+		boolean changed=false;
+
+		try {
+			Class.forName("com.mysql.jdbc.Driver");
+			con = DriverManager.getConnection(
+				"jdbc:mysql://localhost/server?autoReconnect=true&useSSL=false", "java", "lugubr!ous19m1en");
+
+			statement = con.createStatement();
+			statement.executeUpdate("UPDATE user SET PublicKey = '" + pubKey + "' WHERE UserID = '" + user + "';");
+			changed = true;
+		}
+		catch (Exception e) {
+			System.out.println(e);
+			changed = false;
+		}
+		finally {
+			if (statement != null) {
+				try {
+					statement.close();
+				} catch (Exception e) {}
+				statement = null;
+			}
+			if (con != null) {
+				try {
+					con.close();
+				} catch (Exception e) {}
+			}
 		}
 	}
 }
