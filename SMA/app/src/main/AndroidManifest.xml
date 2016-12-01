@@ -32,6 +32,12 @@
 
         </activity>
 
+
+        <service
+            android:name=".ServerComm$ServerListener"
+            android:exported="false"/>
+
+
     </application>
 
 </manifest>

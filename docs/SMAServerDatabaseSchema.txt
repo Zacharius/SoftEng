@@ -1,0 +1,27 @@
+SERVER DATABASE SCHEMA:
++-------------------+
+|       USERS       |
+|-------------------|
+|FIELD      TYPE    |
+|-------------------|
+|ID         int     |
+|userID     varChar |
+|password   varChar |
+|publicKey  varChar |
++-------------------+
+
+
++---------------------------+
+|          MESSAGES         |
+|---------------------------|
+| FIELDS        TYPE        |
+|---------------------------|
+|messageType    int         |
+|messageID      int         |
+|senderID       varChar     |
+|recipientID    varChar     |
+|timestamp      timestamp   |
+|timeout        int         |
+|content        varChar     |
++---------------------------+
+

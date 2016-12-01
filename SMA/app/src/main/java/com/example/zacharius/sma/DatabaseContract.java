@@ -16,9 +16,10 @@ public class DatabaseContract
 
     public static final String Create_MessageTable =
             "CREATE TABLE " + MessageTable.TABLE_NAME + " ( "
-                    + MessageTable.COLUMN_COMPOSERID + " VARCHAR(10), "
-                    + MessageTable.COLUMN_CONTENT + " TEXT, "
-                    + MessageTable.COLUMN_TIMEREC + " INT, "
+                    + MessageTable.COLUMN_SENDERID + " VARCHAR(10) "
+                    + MessageTable.COLUMN_RECEIVERID + "VARCHAR(10)"
+                    + MessageTable.COLUMN_CONTENT + " TEXT "
+                    + MessageTable.COLUMN_TIMEREC + " INT "
                     + MessageTable.COLUMN_TIMEREAD + " INT)";
 
     public static final String Delete_Tables =
@@ -34,7 +35,8 @@ public class DatabaseContract
 
     public static class MessageTable{
         public static final String TABLE_NAME = "Message";
-        public static final String COLUMN_COMPOSERID = "ComposerID";
+        public static final String COLUMN_SENDERID = "SenderID";
+        public static final String COLUMN_RECEIVERID = "ReceiverID";
         public static final String COLUMN_CONTENT = "Content";
         public static final String COLUMN_TIMEREC = "TimeRec";
         public static final String COLUMN_TIMEREAD = "TimeRead";

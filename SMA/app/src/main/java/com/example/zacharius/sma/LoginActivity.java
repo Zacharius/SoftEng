@@ -1,13 +1,29 @@
 package com.example.zacharius.sma;
 
+import android.app.Activity;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.os.AsyncTask;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
+
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.SecureRandom;
+
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
 
 public class LoginActivity extends AppCompatActivity
 {
@@ -18,7 +34,17 @@ public class LoginActivity extends AppCompatActivity
     private static boolean logIn;//tells us whether user is currently able to attempt login
     private static int secondsLeft_logout;//how many more seconds will user be logged out
 
+    private DatabaseHelper helper;
+    private SQLiteDatabase db;
+
     public static Context context;
+
+    private ServerComm server;
+
+    public  static int credentials = 0;//0 - waiting for auth response
+                               //1 - auth came back true
+                               //2 - auth came back false
+    public static String errMsg;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -26,8 +52,15 @@ public class LoginActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
+
+        context = getApplicationContext();
+
         loginAttempts = 0;
         logIn = true;
+
+        server = new ServerComm("198.27.65.177", 4269);
+        Intent serverListener = new Intent(getApplicationContext(), ServerComm.ServerListener.class);
+        getApplicationContext().startService(serverListener);
     }
 
 
@@ -35,7 +68,6 @@ public class LoginActivity extends AppCompatActivity
     public void onEnterCredentials(View v)
     {
 
-        context = getApplicationContext();
 
         //grab EditTexts from Login Page
         EditText idView =  (EditText) findViewById(R.id.ID);
@@ -49,49 +81,13 @@ public class LoginActivity extends AppCompatActivity
         idView.setText("");
         passwordView.setText("");
 
-        //check if user is able to attempt login
-        if(logIn)
-        {
+        Log.d("Login activity", "beggining login action");
 
-            //will eventually check user's entered credentials.
-            //currently just returns true
-            if(ServerComm.checkCredentials(id, password))
-            {
-                //if pass credential check, go to contact list page
-                Intent i = new Intent(v.getContext(), ContactListActivity.class);
-                startActivity(i);
+        Login login = new Login();
+        login.execute(id, password);
 
-            }
-            //if fail credential check
-            //increments loginAttempt, and checks whether user can attempt login again
-            //if not, prevent user from logging in for set amount of time.
-            else if(++loginAttempts > MAX_LOGIN_ATTEMPTS)
-            {
-                logIn = false;
-                secondsLeft_logout = LOGOUT_TIME;
-                (new Thread(new LogoutTimer())).start();
-                Toast.makeText(v.getContext(),
-                        "Invalid login, you have exceeded max login attempt limit and will be logged out for: " + (LOGOUT_TIME/60) + " minutes",
-                        Toast.LENGTH_SHORT)
-                        .show();
-            }
-            //ask user to try login attempt again
-            else
-            {
-            Toast.makeText(v.getContext(),
-                    "Invalid login, try again\n Attempts Left: " + (loginAttempts - MAX_LOGIN_ATTEMPTS),
-                    Toast.LENGTH_SHORT)
-                    .show();
-            }
-        }
-        //tell user how long it is till he can login again
-        else
-        {
-            Toast.makeText(v.getContext(),
-                    "You are currently suspended from system\n Seconds Left : " + secondsLeft_logout ,
-                    Toast.LENGTH_SHORT)
-                    .show();
-        }
+        Intent serverListener = new Intent(getApplicationContext(), ServerComm.ServerListener.class);
+        getApplicationContext().startService(serverListener);
 
     }
 
@@ -113,10 +109,196 @@ public class LoginActivity extends AppCompatActivity
         LoginActivity.logIn = login;
     }
 
+    public void showToast(final String toast)
+    {
+        runOnUiThread(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                Toast.makeText(getApplicationContext(), toast, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    public class Login extends AsyncTask<String, Void, Integer>
+    {
+
+
+        String loginMsg;
+
+        private Login(){}
+
+        @Override
+        protected Integer doInBackground(String... strings)
+        {
+            String id = strings[0];
+            String password = strings[1];
+            
+            //ensure we are connected to server
+            if(server.getServer() != null)
+            {
+                //ensure user is not currently locked out
+                if(logIn){
+
+                    Log.d("login","login true");
+                    server.checkCredentials(id, password);
+
+                    //wait for response from server
+                    while(credentials == 0)
+                    {
+
+                    };
+
+                    if(credentials == 1)
+                    {
+                        Log.d("Login", "login passed");
+
+                        //check if keys have been generated yet
+                        helper = new DatabaseHelper(getApplicationContext());
+                        db = helper.getReadableDatabase();
+                        Cursor cursor = db.query(true,
+                                DatabaseContract.ContactTable.TABLE_NAME,
+                                new String[]{DatabaseContract.ContactTable.COLUMN_KEY},
+                                null,null,null, null, null, null);
+                        db.close();
+
+                        //generate keys because they havent been generated yet
+                        if(cursor == null)
+                        {
+                            KeyPair keyPair = Crypto.keygen();
+
+                            PublicKey pub = keyPair.getPublic();
+                            PrivateKey pri = keyPair.getPrivate();
+
+                            String pubString = Crypto.publicKeyToString(pub);
+                            String priString = Crypto.privateKeyToString(pri);
+
+                            //write keys to local database as strings
+                            db = helper.getWritableDatabase();
+
+                            ContentValues value = new ContentValues();
+                            value.put(DatabaseContract.ContactTable.COLUMN_USERID, "USER_PUB");
+                            value.put(DatabaseContract.ContactTable.COLUMN_KEY, pubString);
+                            if(db.insert(DatabaseContract.ContactTable.TABLE_NAME, null, value) == -1)
+                            {
+                                Log.d("Login", "Trouble inserting into database");
+                            }
+
+
+                            value = new ContentValues();
+                            value.put(DatabaseContract.ContactTable.COLUMN_USERID, "USER_PRI");
+                            value.put(DatabaseContract.ContactTable.COLUMN_KEY, priString);
+                            if(db.insert(DatabaseContract.ContactTable.TABLE_NAME, null, value) == -1)
+                            {
+                                Log.d("Login", "Trouble inserting into database");
+                            }
+
+                            //give public key to server
+                            server.pushPublicKey(pubString);
+
+                            return 2;
+
+                        }
+                        else
+                        {
+                            return 1;
+                        }
 
 
 
 
+                    } else if(++loginAttempts > MAX_LOGIN_ATTEMPTS)
+                    {
+                        logIn = false;
+                        secondsLeft_logout = LOGOUT_TIME;
+                        (new Thread(new LogoutTimer())).start();
+                        loginMsg = "Invalid login, you have exceeded max login attempt limit and will be logged out for: " + (LOGOUT_TIME/60) + " minutes";
+                    }
+                    //ask user to try login attempt again
+                    else
+                    {
+                        loginMsg = "Invalid login, try again\n Attempts Left: " + (MAX_LOGIN_ATTEMPTS - loginAttempts );
+                        publishProgress();
+                    }
+                }
+                //tell user how long it is till he can login again
+                else
+                {
+                    loginMsg = "You are currently suspended from system\n Seconds Left : " + secondsLeft_logout;
+                    publishProgress();
+                }
+            }
+            else
+            {
+                loginMsg = "can't login; not connected to server";
+                publishProgress();
+            }
 
 
+
+            return -1;
+
+        }
+
+        @Override
+        protected void onProgressUpdate(Void... values)
+        {
+            super.onProgressUpdate(values);
+            Log.d("Login", loginMsg);
+            if(LoginActivity.context != null)
+            {
+                Toast.makeText(context,
+                        loginMsg ,
+                        Toast.LENGTH_SHORT)
+                        .show();
+            }
+
+        }
+
+        @Override
+        /*parameter meaning:
+                -1: login fail
+                 1: login pass, go to ContactListActivity
+                 2: login pass, go to PasswordResetActivity*/
+        protected void onPostExecute(Integer result)
+        {
+            super.onPostExecute(result);
+
+            if(result == 1)
+            {
+                runOnUiThread(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        Intent i = new Intent(context, ContactListActivity.class);
+                        startActivity(i);
+                    }
+                });
+
+            }
+            else if(result == 2)
+            {
+                runOnUiThread(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        Intent i = new Intent(context, ResetPasswordActivity.class);
+                        startActivity(i);
+                    }
+                });
+            }
+
+        }
+    }
 }
+
+
+
+
+
+
+
+
