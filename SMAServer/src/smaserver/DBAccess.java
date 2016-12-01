@@ -4,15 +4,14 @@ import java.util.*;
 
 public class DBAccess {
 	public static void main(String args[]) {
-		System.out.println("Enter user's name to get password: ");
+		System.out.println("Enter new user's name: ");
 		Scanner in = new Scanner(System.in);
 		String user = in.nextLine();
-		System.out.println("Old Password? " + DBAccess.getPassword(user));
 		System.out.println("User exists? " + DBAccess.userExists(user));
 		System.out.println("Enter user's new password: ");
 		String newpass = in.nextLine();
-		DBAccess.changePassword(user, newpass);
-		System.out.println("New Password? " + DBAccess.getPassword(user));
+		DBAccess.addUser(user, newpass);
+		System.out.println("User exists? " + DBAccess.userExists(user));
 		System.exit(0);
 	}
 
@@ -157,6 +156,40 @@ public class DBAccess {
 
 			statement = con.createStatement();
 			statement.executeUpdate("UPDATE user SET PublicKey = '" + pubKey + "' WHERE UserID = '" + user + "';");
+			changed = true;
+		}
+		catch (Exception e) {
+			System.out.println(e);
+			changed = false;
+		}
+		finally {
+			if (statement != null) {
+				try {
+					statement.close();
+				} catch (Exception e) {}
+				statement = null;
+			}
+			if (con != null) {
+				try {
+					con.close();
+				} catch (Exception e) {}
+			}
+			return changed;
+		}
+	}
+	
+	public static boolean addUser(String user, String password) {
+		Connection con=null;
+		Statement statement=null;
+		boolean changed=false;
+
+		try {
+			Class.forName("com.mysql.jdbc.Driver");
+			con = DriverManager.getConnection(
+				"jdbc:mysql://localhost/server?autoReconnect=true&useSSL=false", "java", "lugubr!ous19m1en");
+
+			statement = con.createStatement();
+			statement.executeUpdate("INSERT INTO user VALUES ('" + user + "', '" + password + "', '');");
 			changed = true;
 		}
 		catch (Exception e) {
