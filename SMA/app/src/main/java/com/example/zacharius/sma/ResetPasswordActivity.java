@@ -1,5 +1,6 @@
 package com.example.zacharius.sma;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -38,11 +39,16 @@ public class ResetPasswordActivity extends AppCompatActivity {
 
         if(newPassword.equals(passwordConfirm) && newPassword.length() <= 32){
             //ServerComm.changePassword(String newPassword);
+            Intent i = new Intent(view.getContext(), ContactListActivity.class);
+            startActivity(i);
         }
         else{
             Toast.makeText(view.getContext(), "Invalid entry please try again\n",
                     Toast.LENGTH_SHORT).show();
+            nPassword.setText("");
+            cnPassword.setText("");
 
         }
+        
     }
 }
