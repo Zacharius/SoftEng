@@ -99,7 +99,7 @@ public class DeleteContactActivity extends AppCompatActivity {
         }
 
 
-        Intent intent = new Intent(getApplicationContext(), OptionsActivity.class);
+        Intent intent = new Intent(getApplicationContext(), DeleteContactActivity.class);
         startActivity(intent);
 
     }

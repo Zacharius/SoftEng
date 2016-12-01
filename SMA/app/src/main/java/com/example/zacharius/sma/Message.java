@@ -15,12 +15,15 @@ public class Message {
     private int time_rec;
     private int time_opened;
     private String composserID;
+    private int msgID;
+    private int msgType;
 
-    public Message(String cont, String compID, int timeRec ){
+    public Message(String cont, String compID, int timeRec, int msgID, int msgType ){
         this.content = cont;
         this.composserID = compID;
         this.time_rec = timeRec;
-
+        this.msgID = msgID;
+        this.msgType = msgType;
     }
 
     public String getContent(){
@@ -43,5 +46,7 @@ public class Message {
         this.time_opened = time_rec;
     }
 
+    public int getMsgID() {return msgID; }
 
+    public int getMsgType() { return msgType; }
 }

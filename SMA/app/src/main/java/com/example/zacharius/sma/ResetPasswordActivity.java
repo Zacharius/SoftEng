@@ -28,7 +28,7 @@ public class ResetPasswordActivity extends AppCompatActivity {
 
     }
 
-    public void onClickRestPWd(View view){
+    public void onClickResetPW(View view){
 
         context = getApplicationContext();
 

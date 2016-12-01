@@ -34,10 +34,22 @@
         android:prompt="@string/delete_sent"
         />
 
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/contactAdd"/>
+    <Button
+        android:text="Add Contact"
+        android:layout_width="149dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/addContactButton" />
+
     <Button
         android:text="Delete Contacts"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/deleteContactButton"
         android:onClick="onClickDelete"/>
+
 </LinearLayout>
