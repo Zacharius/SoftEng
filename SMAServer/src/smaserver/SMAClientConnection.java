@@ -22,6 +22,7 @@ public class SMAClientConnection implements Runnable {
     private BufferedReader in;
     private Gson gson;
     private SMAProtocolHandler handler;
+    private Thread clientOutPutThread;
 
     public SMAClientConnection(Socket client)throws IOException{
         this.clientSocket = client;
@@ -39,6 +40,12 @@ public class SMAClientConnection implements Runnable {
             if(authenticateUser()){
                 printServerLogMessage("user authenticated successfully");
                 printServerLogMessage("session started for " + clientID);
+
+                // Start the Thread to handle outgoing requests.
+                this.clientOutPutThread = new Thread(new SMAClientConnectionOut(clientID, out));
+                this.clientOutPutThread.start();
+
+                // Call the method to handle incoming requests.
                 listenForIncomingRequests();
             }
         }catch(IOException e){
@@ -47,7 +54,7 @@ public class SMAClientConnection implements Runnable {
         printServerLogMessage("connection terminated");
     }
 
-    public void listenForIncomingRequests()throws IOException{
+    private void listenForIncomingRequests()throws IOException{
         // While we're receiving input, print a log message, get a response from the SMAProtocolHandler,
         // print a log message for the response, and write the response to the Socket.
         String inputLine, outputLine;
@@ -57,6 +64,9 @@ public class SMAClientConnection implements Runnable {
             printServerLogMessage("says to client: " + clientID + ", \"" + outputLine + "\"");
             out.println(outputLine);
         }
+
+        // If the connection dies, the output Thread needs to be stopped.
+        this.clientOutPutThread.interrupt();
     }
 
     /**
@@ -93,7 +103,7 @@ public class SMAClientConnection implements Runnable {
         System.out.println("[" + sdf.format(date) + "][SERVER]: " + msg);
     }
 
-    public void printClientLogMessage(String msg){
+    private void printClientLogMessage(String msg){
         DateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         Date date = new Date();
         System.out.println("[" + sdf.format(date) + "][CLIENT: " + clientID + "]: " + msg);
