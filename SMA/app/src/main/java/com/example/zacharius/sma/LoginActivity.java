@@ -41,7 +41,7 @@ public class LoginActivity extends AppCompatActivity
 
     private ServerComm server;
 
-    public  static int credentials = 0;//0 - waiting for auth response
+    public  static volatile int credentials = 0;//0 - waiting for auth response
                                //1 - auth came back true
                                //2 - auth came back false
     public static String errMsg;
@@ -58,9 +58,13 @@ public class LoginActivity extends AppCompatActivity
         loginAttempts = 0;
         logIn = true;
 
-        server = new ServerComm("198.27.65.177", 4269);
+        Intent intent = new Intent(this, ServerComm.class);
+        intent.putExtra("address", "198.27.65.177");
+        intent.putExtra("port", 4269);
+
+        /*server = new ServerComm("198.27.65.177", 4269);
         Intent serverListener = new Intent(getApplicationContext(), ServerComm.ServerListener.class);
-        getApplicationContext().startService(serverListener);
+        getApplicationContext().startService(serverListener);*/
     }
 
 
@@ -141,7 +145,7 @@ public class LoginActivity extends AppCompatActivity
                 //ensure user is not currently locked out
                 if(logIn){
 
-                    Log.d("login","login true");
+                    Log.d("login", "checking credentials");
                     server.checkCredentials(id, password);
 
                     //wait for response from server
@@ -149,6 +153,8 @@ public class LoginActivity extends AppCompatActivity
                     {
 
                     };
+
+                    Log.d("Login", "Credentials returned " + credentials);
 
                     if(credentials == 1)
                     {
@@ -161,11 +167,12 @@ public class LoginActivity extends AppCompatActivity
                                 DatabaseContract.ContactTable.TABLE_NAME,
                                 new String[]{DatabaseContract.ContactTable.COLUMN_KEY},
                                 null,null,null, null, null, null);
-                        db.close();
 
                         //generate keys because they havent been generated yet
-                        if(cursor == null)
+                        if(!cursor.moveToFirst())
                         {
+                            Log.d("Login", "generating intial keys");
+
                             KeyPair keyPair = Crypto.keygen();
 
                             PublicKey pub = keyPair.getPublic();
@@ -175,6 +182,7 @@ public class LoginActivity extends AppCompatActivity
                             String priString = Crypto.privateKeyToString(pri);
 
                             //write keys to local database as strings
+                            db.close();
                             db = helper.getWritableDatabase();
 
                             ContentValues value = new ContentValues();
@@ -193,6 +201,8 @@ public class LoginActivity extends AppCompatActivity
                             {
                                 Log.d("Login", "Trouble inserting into database");
                             }
+
+                            db.close();
 
                             //give public key to server
                             server.pushPublicKey(pubString);
@@ -236,7 +246,7 @@ public class LoginActivity extends AppCompatActivity
             }
 
 
-
+            credentials = 0;
             return -1;
 
         }
@@ -264,6 +274,8 @@ public class LoginActivity extends AppCompatActivity
         protected void onPostExecute(Integer result)
         {
             super.onPostExecute(result);
+
+            Log.d("login", "doInBackground returned " + result);
 
             if(result == 1)
             {

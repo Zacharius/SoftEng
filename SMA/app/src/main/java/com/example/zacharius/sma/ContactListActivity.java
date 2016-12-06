@@ -7,6 +7,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -27,19 +28,12 @@ public class ContactListActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_contact_list);
 
+        Log.d("ContactlistActivity", "Activity starting");
+
         //get context of the database and create/open for reading.
         mDbHelper = new DatabaseHelper(getApplicationContext());
-        db = mDbHelper.getReadableDatabase();
-       /* db = mDbHelper.getWritableDatabase();
-        // setup database
-        ContentValues values = new ContentValues();
-        values.put(DatabaseContract.ContactTable.COLUMN_USERID, "elijah");
-        values.put(DatabaseContract.ContactTable.COLUMN_NICKNAME, "elijah");
-       // values.put(DatabaseContract.ContactTable.COLUMN_KEY, "fyc");
 
-        //insert the new Row, returning the primary key value of the new row
-        long newRowId = db.insert(DatabaseContract.ContactTable.TABLE_NAME, null, values);
-        db = mDbHelper.getReadableDatabase(); */
+        db = mDbHelper.getReadableDatabase();
         // define a projection that specifies which columns you
         // actually use after this query
         String[] projection = {
@@ -70,14 +64,23 @@ public class ContactListActivity extends AppCompatActivity {
         c.moveToFirst();
         for(int i = 0; i < numberOfContacts; i++){
             String nextContact = c.getString(c.getColumnIndexOrThrow(DatabaseContract.ContactTable.COLUMN_NICKNAME));
+            if(nextContact == null)
+            {
+                Log.d("ContactListActivity", "contact " + c.getString(c.getColumnIndex(DatabaseContract.ContactTable.COLUMN_USERID))+ " has no nickname, excluding from listview");
+            }
+            else{
+                contactList.add(nextContact);
+            }
             c.moveToNext();
-            contactList.add(nextContact);
+
         }
+
+
         c.close();
 
 
-      /*  //sample contancts
-        final ArrayList<String> contactList = new ArrayList<String>();
+        //sample contancts
+        /*final ArrayList<String> contactList = new ArrayList<String>();
         contactList.add("Zach");
         contactList.add("Elijah");
         contactList.add("Brad");
@@ -90,13 +93,14 @@ public class ContactListActivity extends AppCompatActivity {
         contactList.add("Connor"); */
 
 
-
-
         //bind contactList to list, an ArrayAdapter
-        list = new ArrayAdapter<String>(getApplicationContext(), android.R.layout.simple_list_item_1, contactList);
+        list = new ArrayAdapter<>(getApplicationContext(), android.R.layout.simple_list_item_1, contactList);
+
 
         //bind list(arrayadapter) to contactView
         contactsView.setAdapter(list);
+
+
 
         //determine what will happen when a user presses an item in the list
         contactsView.setOnItemClickListener(new AdapterView.OnItemClickListener()
@@ -110,6 +114,7 @@ public class ContactListActivity extends AppCompatActivity {
 
             }
         });
+
     }
 
 

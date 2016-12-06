@@ -52,4 +52,10 @@
         android:id="@+id/deleteContactButton"
         android:onClick="onClickDelete"/>
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Reset Password"
+        android:onClick="onOptionResetPW"/>
+
 </LinearLayout>

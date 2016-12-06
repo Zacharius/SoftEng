@@ -1,9 +1,12 @@
 package com.example.zacharius.sma;
 
 import android.app.IntentService;
+import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Binder;
+import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -21,22 +24,56 @@ import java.util.logging.SocketHandler;
 /**
  * Created by zacharius on 10/23/16.
  */
-public class ServerComm
+public class ServerComm extends Service
 {
 
     private static Socket server;
     private static String address;
     private static int port;
+    private final IBinder binder = new ServerBinder();
 
-    public ServerComm(String address, int port)
+    /*public ServerComm(String address, int port)
     {
         this.address = address;
         this.port = port;
 
+    }*/
+
+    public int onStartCommand(Intent intent, int flags, int startId)
+    {
+        Log.d("ServerComm", "Service Starting ");
+
+        address = intent.getStringExtra("address");
+        port = intent.getIntExtra("port", -1);
+
+        Intent serverListener = new Intent(getApplicationContext(), ServerComm.ServerListener.class);
+        getApplicationContext().startService(serverListener);
+
+        return START_NOT_STICKY;
+    }
+
+    public void onDestroy()
+    {
+        Log.d("Servercom", "Service ending");
     }
 
 
-    public void writeServer(JSONObject object)
+    public IBinder onBind(Intent intent){
+        return binder;
+    }
+
+
+
+    public class ServerBinder extends Binder
+    {
+        private ServerComm getServer()
+        {
+            return  ServerComm.this;
+        }
+    }
+
+
+    public static void writeServer(JSONObject object)
     {
 
         try
@@ -82,7 +119,7 @@ public class ServerComm
 
     }
 
-    public void pushPublicKey(String pub)
+    public  static void pushPublicKey(String pub)
     {
         Log.d("ServerComm", "sending public key to server");
 
@@ -100,16 +137,16 @@ public class ServerComm
 
     }
 
-    public void changePassword(String pass)
+    public static void changePassword(String pass)
     {
         Log.d("ServerComm", "sending new password to server");
 
         JSONObject json = new JSONObject();
 
         try{
-            json.put("messageType", 2);
+            json.put("messageType", 3);
             json.put("messageID", 1);
-            json.put("publicKey", pass);
+            json.put("newPassword", pass);
 
             writeServer(json);
         }catch (JSONException e){
@@ -117,7 +154,7 @@ public class ServerComm
         }
     }
 
-    public static class ServerListener extends IntentService
+    public class ServerListener extends IntentService
     {
         String serverMsg;
 

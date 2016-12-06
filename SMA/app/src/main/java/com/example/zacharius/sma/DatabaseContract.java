@@ -16,10 +16,10 @@ public class DatabaseContract
 
     public static final String Create_MessageTable =
             "CREATE TABLE " + MessageTable.TABLE_NAME + " ( "
-                    + MessageTable.COLUMN_SENDERID + " VARCHAR(10) "
-                    + MessageTable.COLUMN_RECEIVERID + "VARCHAR(10)"
-                    + MessageTable.COLUMN_CONTENT + " TEXT "
-                    + MessageTable.COLUMN_TIMEREC + " INT "
+                    + MessageTable.COLUMN_SENDERID + " VARCHAR(10), "
+                    + MessageTable.COLUMN_RECEIVERID + " VARCHAR(10), "
+                    + MessageTable.COLUMN_CONTENT + " TEXT, "
+                    + MessageTable.COLUMN_TIMEREC + " INT, "
                     + MessageTable.COLUMN_TIMEREAD + " INT)";
 
     public static final String Delete_Tables =

@@ -4,10 +4,14 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static com.example.zacharius.sma.LoginActivity.context;
 
@@ -25,6 +29,8 @@ public class ResetPasswordActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_reset_password);
 
+        Log.d("ResetPasswordActivity", "Activity starting");
+
 
     }
 
@@ -36,9 +42,17 @@ public class ResetPasswordActivity extends AppCompatActivity {
         EditText cnPassword = (EditText)findViewById(R.id.confirmPassword);
         newPassword = nPassword.getText().toString();
         passwordConfirm = cnPassword.getText().toString();
+        Pattern pattern = Pattern.compile("\\s");
+        Matcher matcher = pattern.matcher(newPassword);
+        boolean found = matcher.find();
 
-        if(newPassword.equals(passwordConfirm) && newPassword.length() <= 32){
-            //ServerComm.changePassword(String newPassword);
+
+
+        if(newPassword.equals(passwordConfirm) &&
+                newPassword.length() <= 32 &&
+                newPassword.length() >= 8  &&
+                 !found){
+            ServerComm.changePassword(newPassword);
             Intent i = new Intent(view.getContext(), ContactListActivity.class);
             startActivity(i);
         }
