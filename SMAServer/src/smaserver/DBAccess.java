@@ -2,6 +2,7 @@
 	Created by Nick Dix
 */
 package smaserver;
+
 import java.sql.*;
 import java.util.*;
 
@@ -407,5 +408,9 @@ public class DBAccess {
 			}
 			return changed;
 		}
+	}
+
+	public static String getKey(String clientID){
+		return null;
 	}
 }

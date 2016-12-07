@@ -1,4 +1,4 @@
-package smaserver;
+package smaprotocol;
 
 import java.util.Date;
 

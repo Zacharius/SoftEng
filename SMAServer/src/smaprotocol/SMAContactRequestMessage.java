@@ -1,9 +1,9 @@
-package smaserver;
+package smaprotocol;
 
 /**
  * Created by elijah on 12/5/2016.
  */
-class SMAContactRequestMessage {
+public class SMAContactRequestMessage {
     private int messageType;
     private int messageID;
     private String recipientID;

@@ -1,4 +1,4 @@
-package smaserver;
+package smaprotocol;
 
 
 import java.util.Date;
@@ -13,7 +13,7 @@ public class SMANetworkResponse {
     private boolean status;
     private String reason;
 
-    public SMANetworkResponse(
+    SMANetworkResponse(
                 int messageType,
                 int messageID,
                 boolean status,

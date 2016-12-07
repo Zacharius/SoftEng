@@ -1,9 +1,9 @@
-package smaserver;
+package smaprotocol;
 
 /**
  * Created by elijah on 11/30/2016.
  */
-public class SMAChangePublicKeyRequest {
+ public class SMAChangePublicKeyRequest {
     private int messageType;
     private int messageID;
     private String publicKey;

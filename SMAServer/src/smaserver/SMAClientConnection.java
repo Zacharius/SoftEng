@@ -2,6 +2,7 @@ package smaserver;
 
 
 import com.google.gson.Gson;
+import smaprotocol.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -15,7 +16,7 @@ import java.util.Date;
 /**
  * Created by elijah on 11/14/2016.
  */
-public class SMAClientConnection implements Runnable {
+class SMAClientConnection implements Runnable {
     private Socket clientSocket;
     private String clientID;
     private PrintWriter out;
@@ -24,7 +25,7 @@ public class SMAClientConnection implements Runnable {
     private SMAProtocolHandler handler;
     private Thread clientOutPutThread;
 
-    public SMAClientConnection(Socket client)throws IOException{
+    SMAClientConnection(Socket client)throws IOException{
         this.clientSocket = client;
         gson = new Gson();
         handler = new SMAProtocolHandler(gson);

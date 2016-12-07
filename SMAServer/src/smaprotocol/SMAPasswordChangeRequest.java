@@ -1,4 +1,4 @@
-package smaserver;
+package smaprotocol;
 
 /**
  * Created by elijah on 11/30/2016.
