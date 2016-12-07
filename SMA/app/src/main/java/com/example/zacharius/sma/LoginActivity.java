@@ -1,12 +1,15 @@
 package com.example.zacharius.sma;
 
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
+import android.os.IBinder;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -46,6 +49,22 @@ public class LoginActivity extends AppCompatActivity
                                //2 - auth came back false
     public static String errMsg;
 
+    private ServiceConnection connector = new ServiceConnection()
+    {
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder iBinder)
+        {
+            ServerComm.ServerBinder binder = (ServerComm.ServerBinder) iBinder;
+            server = binder.getServer();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName)
+        {
+
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -61,6 +80,8 @@ public class LoginActivity extends AppCompatActivity
         Intent intent = new Intent(this, ServerComm.class);
         intent.putExtra("address", "198.27.65.177");
         intent.putExtra("port", 4269);
+        startService(intent);
+        bindService(intent, connector, Context.BIND_AUTO_CREATE);
 
         /*server = new ServerComm("198.27.65.177", 4269);
         Intent serverListener = new Intent(getApplicationContext(), ServerComm.ServerListener.class);
@@ -90,8 +111,6 @@ public class LoginActivity extends AppCompatActivity
         Login login = new Login();
         login.execute(id, password);
 
-        Intent serverListener = new Intent(getApplicationContext(), ServerComm.ServerListener.class);
-        getApplicationContext().startService(serverListener);
 
     }
 

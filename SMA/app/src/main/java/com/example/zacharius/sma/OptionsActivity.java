@@ -1,11 +1,15 @@
 package com.example.zacharius.sma;
 
 import android.app.Dialog;
+import android.content.ComponentName;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -33,6 +37,7 @@ public class OptionsActivity extends AppCompatActivity {
     ArrayAdapter<CharSequence> delete_adapter;
     DatabaseHelper mDbHelper;
     SQLiteDatabase db;
+    ServerComm server;
 
 
     @Override
@@ -73,6 +78,25 @@ public class OptionsActivity extends AppCompatActivity {
 
 
         });
+
+        ServiceConnection connector = new ServiceConnection()
+        {
+            @Override
+            public void onServiceConnected(ComponentName componentName, IBinder iBinder)
+            {
+                ServerComm.ServerBinder binder = (ServerComm.ServerBinder) iBinder;
+                server = binder.getServer();
+            }
+
+            @Override
+            public void onServiceDisconnected(ComponentName componentName)
+            {
+
+            }
+        };
+
+        Intent intent = new Intent(this, ServerComm.class);
+        bindService(intent, connector, Context.BIND_AUTO_CREATE);
     }
 
     public void onClickDelete(View v) {
@@ -119,6 +143,8 @@ public class OptionsActivity extends AppCompatActivity {
         }
 
         db.close();
+
+
 
         //give public key to server
         ServerComm.pushPublicKey(pubString);

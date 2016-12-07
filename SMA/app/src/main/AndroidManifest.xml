@@ -38,7 +38,7 @@
 
         </activity>
 
-        <Service
+        <service
             android:name=".ServerComm"/>
 
         <service

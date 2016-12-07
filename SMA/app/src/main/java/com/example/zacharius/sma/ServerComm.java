@@ -32,12 +32,10 @@ public class ServerComm extends Service
     private static int port;
     private final IBinder binder = new ServerBinder();
 
-    /*public ServerComm(String address, int port)
+    public ServerComm()
     {
-        this.address = address;
-        this.port = port;
 
-    }*/
+    }
 
     public int onStartCommand(Intent intent, int flags, int startId)
     {
@@ -46,8 +44,8 @@ public class ServerComm extends Service
         address = intent.getStringExtra("address");
         port = intent.getIntExtra("port", -1);
 
-        Intent serverListener = new Intent(getApplicationContext(), ServerComm.ServerListener.class);
-        getApplicationContext().startService(serverListener);
+        Intent serverListener = new Intent(this, ServerComm.ServerListener.class);
+        startService(serverListener);
 
         return START_NOT_STICKY;
     }
@@ -66,7 +64,7 @@ public class ServerComm extends Service
 
     public class ServerBinder extends Binder
     {
-        private ServerComm getServer()
+        public ServerComm getServer()
         {
             return  ServerComm.this;
         }
@@ -154,13 +152,13 @@ public class ServerComm extends Service
         }
     }
 
-    public class ServerListener extends IntentService
+    public static class ServerListener extends IntentService
     {
         String serverMsg;
 
         public ServerListener()
         {
-            super("Server Listener");
+            super("ServerListener");
         }
 
         @Override
