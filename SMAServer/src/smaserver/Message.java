@@ -10,7 +10,8 @@ public class Message {
 	private Timestamp time2Read;
 	private int messageType;
 	private int messageID;
-	public Message(String s, String r, String c, Timestamp tr, Timestamp t2, int mt, int mi) {
+	private int ID;
+	public Message(String s, String r, String c, Timestamp tr, Timestamp t2, int mt, int mi, int id) {
 		senderID = s;
 		receiverID = r;
 		content = c;
@@ -18,6 +19,7 @@ public class Message {
 		time2Read = t2;
 		messageType = mt;
 		messageID = mi;
+		ID = id;
 	}
 
 	public String getSenderID() { return senderID; }
@@ -27,4 +29,5 @@ public class Message {
 	public Timestamp getTime2Read() { return time2Read; }
 	public int getMessageType() { return messageType; }
 	public int getMessageID() { return messageID; }
+	public int getID() { return ID; }
 }

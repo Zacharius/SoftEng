@@ -14,7 +14,8 @@ class Message {
 	private Timestamp time2Read;
 	private int messageType;
 	private int messageID;
-	public Message(String s, String r, String c, Timestamp tr, Timestamp t2, int mt, int mi) {
+	private int ID;
+	public Message(String s, String r, String c, Timestamp tr, Timestamp t2, int mt, int mi, int id) {
 		senderID = s;
 		receiverID = r;
 		content = c;
@@ -22,6 +23,7 @@ class Message {
 		time2Read = t2;
 		messageType = mt;
 		messageID = mi;
+		ID = id;
 	}
 
 	public String getSenderID() { return senderID; }
@@ -31,8 +33,9 @@ class Message {
 	public Timestamp getTime2Read() { return time2Read; }
 	public int getMessageType() { return messageType; }
 	public int getMessageID() { return messageID; }
-}*/
-
+	public int getID() { return ID; }
+}
+*/
 public class DBAccess {
 	public static void main(String args[]) {
 		/*
@@ -58,7 +61,13 @@ public class DBAccess {
 			//+ DBAccess.addMessage("blob", "bolb", "This is a sentence.", 
 			//time, 0, 0));
 		*/
-		System.out.println(DBAccess.getMessages("bolb"));
+		Timestamp time = new Timestamp(System.currentTimeMillis());
+		DBAccess.addMessage("sender", "receiver", "content", time, -1, -1);
+		ArrayList<Message> m = DBAccess.getMessages("receiver");
+		System.out.println(m);
+		int id = (m.get(0)).getID();
+		System.out.println(id);
+		System.out.println(DBAccess.deleteMessage(id, false));
 		System.exit(0);
 	}
 
@@ -124,7 +133,7 @@ public class DBAccess {
 			rs = statement.executeQuery("SELECT * FROM message WHERE ReceiverID = '" + receiver + "';");
 
 			while (rs.next()) {
-				Message msg = new Message(rs.getString(1), rs.getString(2), rs.getString(3), rs.getTimestamp(4), rs.getTimestamp(5), rs.getInt(6), rs.getInt(7));
+				Message msg = new Message(rs.getString(1), rs.getString(2), rs.getString(3), rs.getTimestamp(4), rs.getTimestamp(5), rs.getInt(6), rs.getInt(7), rs.getInt(8));
 				messages.add(msg);
 			}
 		}
@@ -320,7 +329,7 @@ public class DBAccess {
 			con = DriverManager.getConnection(
 				"jdbc:mysql://localhost/server?autoReconnect=true&useSSL=false", "java", "lugubr!ous19m1en");
 			Timestamp currentTime = new Timestamp(System.currentTimeMillis());
-			String sqlComm = "INSERT INTO message VALUES ('" + sender + "', '" + receiver + "', '" + content + "', '" + currentTime.toString() + "', '" + time2read.toString() + "', " + messageType + ", " + messageID + ");";
+			String sqlComm = "INSERT INTO message VALUES ('" + sender + "', '" + receiver + "', '" + content + "', '" + currentTime.toString() + "', '" + time2read.toString() + "', " + messageType + ", " + messageID + ", NULL);";
 			statement = con.createStatement();
 			
 			statement.executeUpdate(sqlComm);
@@ -347,7 +356,7 @@ public class DBAccess {
 		}
 	}
 	
-	public static boolean deleteMessage(int messageID, boolean time2delete) {
+	public static boolean deleteMessage(int ID, boolean time2delete) {
 		Connection con=null;
 		Statement statement1=null;
 		boolean changed=false;
@@ -362,7 +371,7 @@ public class DBAccess {
 			statement1 = con.createStatement();
 			
 			if (!time2delete) {
-				sqlComm = "DELETE FROM message WHERE MessageID = '" + messageID + "';";
+				sqlComm = "DELETE FROM message WHERE ID = '" + ID + "';";
 				statement1.executeUpdate(sqlComm);
 			}
 			else {
