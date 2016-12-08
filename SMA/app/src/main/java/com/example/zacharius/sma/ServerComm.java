@@ -3,7 +3,9 @@ package com.example.zacharius.sma;
 import android.app.IntentService;
 import android.app.Service;
 import android.content.BroadcastReceiver;
+import android.content.ContentValues;
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.IBinder;
@@ -30,6 +32,7 @@ public class ServerComm extends Service
     private static Socket server;
     private static String address;
     private static int port;
+    private int messageID;
     private final IBinder binder = new ServerBinder();
 
     public ServerComm()
@@ -52,7 +55,7 @@ public class ServerComm extends Service
 
     public void onDestroy()
     {
-        Log.d("Servercom", "Service ending");
+        Log.d("ServerComm", "Service ending");
     }
 
 
@@ -71,7 +74,7 @@ public class ServerComm extends Service
     }
 
 
-    public static void writeServer(JSONObject object)
+    public void writeServer(JSONObject object)
     {
 
         try
@@ -81,6 +84,7 @@ public class ServerComm extends Service
                 PrintWriter write = new PrintWriter(server.getOutputStream(), true);
                 System.out.println(object.toString());
                 write.println(object.toString());
+                messageID++;
 
             }
             else{
@@ -103,7 +107,7 @@ public class ServerComm extends Service
 
         try{
             object.put("messageType", 1);
-            object.put("messageID", 1);
+            object.put("messageID", messageID);
             object.put("senderID", id);
             object.put("password", password);
 
@@ -117,7 +121,7 @@ public class ServerComm extends Service
 
     }
 
-    public  static void pushPublicKey(String pub)
+    public void pushPublicKey(String pub)
     {
         Log.d("ServerComm", "sending public key to server");
 
@@ -125,7 +129,7 @@ public class ServerComm extends Service
 
         try{
             json.put("messageType", 8);
-            json.put("messageID", 1);
+            json.put("messageID", messageID);
             json.put("publicKey", pub);
 
             writeServer(json);
@@ -135,7 +139,7 @@ public class ServerComm extends Service
 
     }
 
-    public static void changePassword(String pass)
+    public void changePassword(String pass)
     {
         Log.d("ServerComm", "sending new password to server");
 
@@ -143,7 +147,7 @@ public class ServerComm extends Service
 
         try{
             json.put("messageType", 3);
-            json.put("messageID", 1);
+            json.put("messageID", messageID);
             json.put("newPassword", pass);
 
             writeServer(json);
@@ -151,6 +155,46 @@ public class ServerComm extends Service
             e.printStackTrace();
         }
     }
+
+    public void contactRequest(String contactID)
+    {
+        Log.d("ServerComm", "sending contact request to server");
+
+        JSONObject json = new JSONObject();
+
+        try{
+            json.put("messageType", 4);
+            json.put("messageID", messageID);
+            json.put("recipientID", contactID);
+
+            writeServer(json);
+        }catch (JSONException e){
+            e.printStackTrace();
+        }
+    }
+
+    public void sendText(String contactID, int timeout, String content)
+    {
+        Log.d("ServerComm", "sending text for " + contactID + " to server");
+
+        JSONObject json = new JSONObject();
+
+        try{
+            json.put("messageType", 6);
+            json.put("messageID", messageID);
+            json.put("recipientID", contactID);
+            json.put("timestamp", System.currentTimeMillis());
+            json.put("timeout", timeout);
+            json.put("content", content);
+
+
+            writeServer(json);
+        }catch (JSONException e){
+            e.printStackTrace();
+        }
+    }
+
+
 
     public static class ServerListener extends IntentService
     {
@@ -185,15 +229,21 @@ public class ServerComm extends Service
                         publishProgress(serverMsg);
                         Log.d("ServerComm", serverMsg);
 
+                        DatabaseHelper helper = new DatabaseHelper(this);
+                        SQLiteDatabase db;// = helper.getWritableDatabase();
+                        ContentValues values;
+
 
                         JSONObject object = new JSONObject(serverMsg);
                         int messageType = object.getInt("messageType");
                         String messageID = object.getString("messageID");
+                        boolean status;
+                        String id;
 
                         switch (messageType)
                         {
                             case 2:
-                                boolean status = object.getBoolean("status");
+                                status = object.getBoolean("status");
                                 if (status)
                                 {
                                     LoginActivity.credentials = 1;
@@ -203,6 +253,52 @@ public class ServerComm extends Service
                                     LoginActivity.credentials = -1;
                                     LoginActivity.errMsg = object.getString("reason");
                                 }
+                                break;
+                            case 5:
+                                status = object.getBoolean("status");
+                                id = object.getString("senderID");
+                                if(status)
+                                {
+                                    Log.d("ServerListener", "Accepted Contact " + id);
+                                    Toast.makeText(this, "Accepted Contact " + id, Toast.LENGTH_SHORT);
+
+                                    db = helper.getWritableDatabase();
+
+                                    values = new ContentValues();
+                                    values.put(DatabaseContract.ContactTable.COLUMN_USERID, id);
+                                    values.put(DatabaseContract.ContactTable.COLUMN_NICKNAME, id);
+
+                                    String key = object.getString("publicKey");
+                                    values.put(DatabaseContract.ContactTable.COLUMN_KEY, key);
+
+                                    db.insert(DatabaseContract.ContactTable.TABLE_NAME, null, values);
+                                    db.close();
+                                }
+                                else
+                                {
+                                    Log.d("ServerListener", "Denied Contact " + id);
+                                    Toast.makeText(this, "Denied Contact " + id, Toast.LENGTH_SHORT);
+                                }
+                                break;
+                            case 6:
+                                db = helper.getWritableDatabase();
+                                values = new ContentValues();
+
+                                id = object.getString("senderID");
+                                values.put(DatabaseContract.MessageTable.COLUMN_SENDERID, id);
+
+
+                                values.put(DatabaseContract.MessageTable.COLUMN_TIMEREC, System.currentTimeMillis());
+
+                                String content = object.getString("content");
+                                values.put(DatabaseContract.MessageTable.COLUMN_CONTENT, content);
+
+                                String timeout = object.getString("timeout");
+                                values.put(DatabaseContract.MessageTable.COLUMN_CONTENT, timeout);
+
+                                db.insert(DatabaseContract.MessageTable.TABLE_NAME, null, values);
+                                db.close();
+
                         }
                     }
             }catch (Exception e)

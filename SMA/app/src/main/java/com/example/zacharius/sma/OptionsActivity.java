@@ -147,7 +147,7 @@ public class OptionsActivity extends AppCompatActivity {
 
 
         //give public key to server
-        ServerComm.pushPublicKey(pubString);
+        server.pushPublicKey(pubString);
 
         Intent i = new Intent(getApplicationContext(), ResetPasswordActivity.class);
         startActivity(i);
