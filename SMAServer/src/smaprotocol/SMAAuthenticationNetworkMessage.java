@@ -1,4 +1,4 @@
-package smaserver;
+package smaprotocol;
 
 import java.security.Timestamp;
 import java.util.Date;
@@ -6,7 +6,7 @@ import java.util.Date;
 /**
  * Created by elijah on 11/21/2016.
  */
-public class SMAAuthenticationNetworkMessage {
+ public class SMAAuthenticationNetworkMessage {
     private int messageType;
     private int messageID;
     private String senderID;

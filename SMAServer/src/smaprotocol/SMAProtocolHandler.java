@@ -1,5 +1,8 @@
-package smaserver;
+package smaprotocol;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
+import smaserver.Message;
+import smaserver.DBAccess;
 import com.google.gson.Gson;
 
 import java.sql.Timestamp;
@@ -7,9 +10,12 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.function.BooleanSupplier;
 
 /**
  * Created by elijah on 11/21/2016.
+ *
+ * The SMAProtocolHandler contains all code for determining appropriate communication between server and client.
  */
 public class SMAProtocolHandler {
     private Gson gson;
@@ -19,9 +25,12 @@ public class SMAProtocolHandler {
     }
 
     /**
-     * Return a network response object specific to the authentication request handled.
-     * @param message
-     * @return
+     * Return a network response object specific to the authentication request handled. This is handled in its own
+     * method due to the nature of authentication and the Thread needing to know the authentication state resulting
+     * from an auth request.
+     *
+     * @param message is the String input passed to the server.
+     * @return SMANetworkResponse object seed to indicate if authentication was successful.
      */
     public SMANetworkResponse authenticateUser(String message){
         SMAGenericNetworkMessage incoming = gson.fromJson(message, SMAGenericNetworkMessage.class);
@@ -68,9 +77,10 @@ public class SMAProtocolHandler {
         SMAGenericNetworkMessage request = gson.fromJson(input, SMAGenericNetworkMessage.class);
         boolean status = false;
         String reason = "";
+        String ouptut;
         switch(request.getMessageType()){
 
-            // Message type 3 indicates a change of password request.
+            // 3 indicates a change of password request.
             case 3:
                 SMAPasswordChangeRequest newPassword = gson.fromJson(input, SMAPasswordChangeRequest.class);
 
@@ -93,6 +103,11 @@ public class SMAProtocolHandler {
                     reason = "failed to update public key";
                 }
                 break;
+            // 11 indicates the user is sending their response to a contact.
+            case 11:
+                printClientLogMessage(clientID, "handling contact response");
+
+                return formatContactResponseServerReply(input, clientID);
             // The default action right now is to simply return the request.
             default:
                 return input;
@@ -106,6 +121,93 @@ public class SMAProtocolHandler {
                 reason);
         return gson.toJson(response);
     }
+
+    public String formatContactResponseServerReply(String input, String clientID){
+        boolean status = false;
+        String reason = null;
+        String key = null;
+
+        // Get the contact request response object.
+        SMAContactResponseMessage contactResponse = gson.fromJson(input, SMAContactResponseMessage.class);
+
+        // Attempt to add a message to the database containing the response.
+        if(DBAccess.addMessage(
+                clientID,
+                contactResponse.getRecipientID(),
+                String.valueOf(contactResponse.isStatus()),
+                new Timestamp(Calendar.getInstance().get(Calendar.MILLISECOND)),
+                11,
+                contactResponse.getMessageID())
+                ) {
+            status = true;
+
+            // The contact response was successfully added to the server. Now the actual response must be determined.
+            // Did the user accept this request?
+            if(contactResponse.isStatus()) {
+                // Get the key for the user who sent the request. (the recipient of the response)
+                key = DBAccess.getKey(contactResponse.getRecipientID());
+            }
+        }else{
+            reason = "DB ACCESS FAILURE: could not forward contact response";
+        }
+
+        return gson.toJson(new SMAContactResponseServerReply(
+                12,
+                contactResponse.getMessageID(),
+                status,
+                reason,
+                key
+        ));
+    }
+    /**
+     * Takes an internal Message object and formats an appropriate response based on its contents. Types may include
+     * but are not limited to:
+     *      -contact requests
+     *      -contact responses
+     *      -message
+     */
+    public String getOutgoingMessage(Message message){
+        String output = null;
+        switch (message.getMessageType()){
+            case 4:
+                output = getForwardContactRequestMessage(message);
+                break;
+            case 11:
+                output = getForwardContactResponseMessage(message);
+                break;
+            default:
+        }
+        return output;
+    }
+
+
+    public String getForwardContactResponseMessage(Message message){
+        //  Set the key to the sender's if this request was accepted else null.
+        String publicKey = Boolean.parseBoolean(message.getContent()) ? DBAccess.getKey(message.getSenderID()) : null;
+
+        return gson.toJson(new SMAForwardContactResponseMessage(
+                5,
+                message.getMessageID(),
+                message.getSenderID(),
+                Boolean.parseBoolean(message.getContent()),
+                publicKey
+        ));
+    }
+
+    /**
+     *
+     * @param message is the Message object containing the database Message which needs to be converted to output.
+     * @return a String representation of a contact request to be forwarded to a user.
+     */
+    public String getForwardContactRequestMessage(Message message){
+        return gson.toJson(
+                new SMAForwardContactMessage(
+                    10,
+                    message.getMessageID(),
+                    message.getSenderID()
+                ));
+    }
+
 
     /**
      * Given the input line and clientID, return a server response message to a contact request.
