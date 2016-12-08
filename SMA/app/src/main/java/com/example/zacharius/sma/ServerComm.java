@@ -242,7 +242,7 @@ public class ServerComm extends Service
 
                         switch (messageType)
                         {
-                            case 2:
+                            case 2://login response
                                 status = object.getBoolean("status");
                                 if (status)
                                 {
@@ -254,7 +254,7 @@ public class ServerComm extends Service
                                     LoginActivity.errMsg = object.getString("reason");
                                 }
                                 break;
-                            case 5:
+                            case 5://accepted contact
                                 status = object.getBoolean("status");
                                 id = object.getString("senderID");
                                 if(status)
@@ -267,6 +267,7 @@ public class ServerComm extends Service
                                     values = new ContentValues();
                                     values.put(DatabaseContract.ContactTable.COLUMN_USERID, id);
                                     values.put(DatabaseContract.ContactTable.COLUMN_NICKNAME, id);
+                                    values.put(DatabaseContract.ContactTable.COLUMN_STATUS, 0);
 
                                     String key = object.getString("publicKey");
                                     values.put(DatabaseContract.ContactTable.COLUMN_KEY, key);
@@ -280,7 +281,7 @@ public class ServerComm extends Service
                                     Toast.makeText(this, "Denied Contact " + id, Toast.LENGTH_SHORT);
                                 }
                                 break;
-                            case 6:
+                            case 6://receive message
                                 db = helper.getWritableDatabase();
                                 values = new ContentValues();
 

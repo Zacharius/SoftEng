@@ -17,8 +17,10 @@ public class DatabaseContract
 
     public static final String Create_MessageTable =
             "CREATE TABLE " + MessageTable.TABLE_NAME + " ( "
-                    + MessageTable.COLUMN_SENDERID + " VARCHAR(10), "
+                    + MessageTable.COLUMN_MSGID + " INT, "
+                    + MessageTable.COLUMN_CONTACT + " VARCHAR(10), "
                     + MessageTable.COLUMN_CONTENT + " TEXT, "
+                    + MessageTable.COLUMN_TYPE + " INT, "
                     + MessageTable.COLUMN_TIMEREC + " INT, "
                     + MessageTable.COLUMN_TIMEOUT + " INT, "
                     + MessageTable.COLUMN_TIMEREAD + " INT)";
@@ -37,12 +39,18 @@ public class DatabaseContract
             1: contact you are awating response from
             2: contact waiting for response from you
          */
-        public static final String COLUMN_STATUS = "STATUS";
+        public static final String COLUMN_STATUS = "Status";
     }
 
     public static class MessageTable{
         public static final String TABLE_NAME = "Message";
-        public static final String COLUMN_SENDERID = "SenderID";
+        public static final String COLUMN_MSGID = "MsgID"; //unique number to identify messages by
+        public static final String COLUMN_CONTACT = "Contact";
+        /*Type values:
+            0: sent message, contact is the id of the user you sent message to
+            1: received message, contact is the id of the user who sent message to you
+         */
+        public static final String COLUMN_TYPE = "Type";
         public static final String COLUMN_CONTENT = "Content";
         public static final String COLUMN_TIMEREC = "TimeRec";
         public static final String COLUMN_TIMEREAD = "TimeRead";
