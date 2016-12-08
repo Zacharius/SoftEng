@@ -36,6 +36,7 @@ class Message {
 	public int getID() { return ID; }
 }
 */
+
 public class DBAccess {
 	public static void main(String args[]) {
 		/*
@@ -60,14 +61,14 @@ public class DBAccess {
 			+ DBAccess.deleteMessage(1, true));
 			//+ DBAccess.addMessage("blob", "bolb", "This is a sentence.", 
 			//time, 0, 0));
-		*/
 		Timestamp time = new Timestamp(System.currentTimeMillis());
 		DBAccess.addMessage("sender", "receiver", "content", time, -1, -1);
 		ArrayList<Message> m = DBAccess.getMessages("receiver");
 		System.out.println(m);
 		int id = (m.get(0)).getID();
-		System.out.println(id);
-		System.out.println(DBAccess.deleteMessage(id, false));
+		System.out.println(id);*/
+		
+		System.out.println(DBAccess.getPublicKey("PardonMeSir"));
 		System.exit(0);
 	}
 
@@ -118,6 +119,53 @@ public class DBAccess {
 		}
 	}
 	
+	public static String getPublicKey(String id) {
+		Connection con=null;
+		Statement statement=null;
+		ResultSet rs=null;
+		String publicKey="";
+		
+		try {
+			Class.forName("com.mysql.jdbc.Driver");
+			con = DriverManager.getConnection(
+				"jdbc:mysql://localhost/server?autoReconnect=true&useSSL=false", "java", "lugubr!ous19m1en");
+
+			statement = con.createStatement();
+			rs = statement.executeQuery("SELECT PublicKey FROM user WHERE UserID = '" + id + "';");
+
+			if (!rs.next()) {
+				publicKey = "User does not exist";
+			}
+			else {
+				publicKey = rs.getString(1);
+			}
+		}
+		catch (Exception e) {
+			System.out.println(e);
+		}
+		finally {
+			if (rs != null) {
+				try {
+					rs.close();
+				} catch (Exception e) {}
+				rs = null;
+			}
+			if (statement != null) {
+				try {
+					statement.close();
+				} catch (Exception e) {}
+				statement = null;
+			}
+			if (con != null) {
+				try {
+					con.close();
+				} catch (Exception e) {}
+				con = null;
+			}
+			return publicKey;
+		}
+	}
+
 	public static ArrayList<Message> getMessages(String receiver) {
 		Connection con=null;
 		Statement statement=null;
