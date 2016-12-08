@@ -40,11 +40,11 @@ public class Contact {
 
     public void setMessage(){
         String[] projection = {
-                DatabaseContract.MessageTable.COLUMN_SENDERID,
+                DatabaseContract.MessageTable.COLUMN_CONTACT,
                 DatabaseContract.MessageTable.COLUMN_CONTENT
         };
 
-        String selection = DatabaseContract.MessageTable.COLUMN_SENDERID + "= ?";
+        String selection = DatabaseContract.MessageTable.COLUMN_CONTACT + "= ?";
         String[] selectionArgs = { contactID };
 
         Cursor c = db.query(

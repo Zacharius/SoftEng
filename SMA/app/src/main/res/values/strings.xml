@@ -12,4 +12,5 @@
         <item>24 hr</item>
 
     </string-array>
+    <string name="title_activity_pending_contact">PendingContactActivity</string>
 </resources>

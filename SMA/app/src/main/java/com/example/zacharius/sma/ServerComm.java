@@ -286,7 +286,7 @@ public class ServerComm extends Service
                                 values = new ContentValues();
 
                                 id = object.getString("senderID");
-                                values.put(DatabaseContract.MessageTable.COLUMN_SENDERID, id);
+                                values.put(DatabaseContract.MessageTable.COLUMN_CONTACT, id);
 
 
                                 values.put(DatabaseContract.MessageTable.COLUMN_TIMEREC, System.currentTimeMillis());
