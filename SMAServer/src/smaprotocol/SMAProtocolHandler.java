@@ -145,7 +145,7 @@ public class SMAProtocolHandler {
             // Did the user accept this request?
             if(contactResponse.isStatus()) {
                 // Get the key for the user who sent the request. (the recipient of the response)
-                key = DBAccess.getKey(contactResponse.getRecipientID());
+                key = DBAccess.getPublicKey(contactResponse.getRecipientID());
             }
         }else{
             reason = "DB ACCESS FAILURE: could not forward contact response";
@@ -169,12 +169,17 @@ public class SMAProtocolHandler {
     public String getOutgoingMessage(Message message){
         String output = null;
         switch (message.getMessageType()){
+
+            // This is a contact request from a user.
             case 4:
                 output = getForwardContactRequestMessage(message);
                 break;
+
+            // This is a contact response.
             case 11:
                 output = getForwardContactResponseMessage(message);
                 break;
+
             default:
         }
         return output;
@@ -183,7 +188,7 @@ public class SMAProtocolHandler {
 
     public String getForwardContactResponseMessage(Message message){
         //  Set the key to the sender's if this request was accepted else null.
-        String publicKey = Boolean.parseBoolean(message.getContent()) ? DBAccess.getKey(message.getSenderID()) : null;
+        String publicKey = Boolean.parseBoolean(message.getContent()) ? DBAccess.getPublicKey(message.getSenderID()) : null;
 
         return gson.toJson(new SMAForwardContactResponseMessage(
                 5,

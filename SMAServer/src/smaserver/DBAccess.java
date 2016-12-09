@@ -457,8 +457,4 @@ public class DBAccess {
 			return changed;
 		}
 	}
-
-	public static String getKey(String clientID){
-		return null;
-	}
 }
