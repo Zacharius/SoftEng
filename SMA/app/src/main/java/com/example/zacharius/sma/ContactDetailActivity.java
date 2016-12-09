@@ -12,12 +12,15 @@ import android.widget.ListView;
 import android.widget.TextView;
 import com.example.zacharius.sma.Contact;
 
+import java.util.ArrayList;
+
 
 public class ContactDetailActivity extends AppCompatActivity
 {
     TextView contactName;
     DatabaseHelper mDbHelper;
     SQLiteDatabase db;
+    ArrayList<Message> messages = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -41,7 +44,7 @@ public class ContactDetailActivity extends AppCompatActivity
         };
 
         String selection = DatabaseContract.ContactTable.COLUMN_NICKNAME + " = ? ";
-        String[] selectionArgs = {name};
+        String[] selectionArgs = {name};// need to add user id or name
 
         Cursor c = db.query(
                 DatabaseContract.ContactTable.TABLE_NAME,
@@ -59,11 +62,65 @@ public class ContactDetailActivity extends AppCompatActivity
         c.close();
 
         Contact con = new Contact(ContactID, ContactName, mDbHelper, db);
+        messages = createMessageList(con);
+        displayMessages();
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.select_dialog_item, con.getMessage());
+       /* ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.select_dialog_item, con.getMessage());
         ListView LV = (ListView)findViewById(R.id.contactMessages);
-        LV.setAdapter(adapter);
+        LV.setAdapter(adapter);*/
 
 
     }
+
+    public ArrayList<Message> createMessageList(Contact con){
+
+        ArrayList<Message> message = new ArrayList<>();
+        String[] projection = {
+                DatabaseContract.MessageTable.COLUMN_SENDERID,
+                DatabaseContract.MessageTable.COLUMN_RECEIVERID,
+                DatabaseContract.MessageTable.COLUMN_CONTENT,
+                DatabaseContract.MessageTable.COLUMN_TIMEREC,
+                DatabaseContract.MessageTable.COLUMN_TIMEREAD
+
+        };
+
+        String selection = DatabaseContract.MessageTable.COLUMN_SENDERID + "= ?";
+        String[] selectionArgs = { con.getID() };
+
+        String sortOrder =
+                DatabaseContract.MessageTable.COLUMN_TIMEREC + "DESC";
+
+        Cursor c = db.query(
+                DatabaseContract.MessageTable.TABLE_NAME,
+                projection,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                sortOrder
+        );
+
+        c.moveToFirst();
+        int num_message = c.getCount();
+        for(int i = 0; i< num_message; i++) {
+            String mess = c.getString(c.getColumnIndexOrThrow(DatabaseContract.MessageTable.COLUMN_CONTENT));
+            String sendID = c.getString(c.getColumnIndexOrThrow(DatabaseContract.MessageTable.COLUMN_SENDERID));
+            String recID = c.getString(c.getColumnIndexOrThrow(DatabaseContract.MessageTable.COLUMN_RECEIVERID));
+            int timerec = c.getInt(c.getColumnIndexOrThrow(DatabaseContract.MessageTable.COLUMN_TIMEREC));
+            int timeread = c.getInt(c.getColumnIndexOrThrow(DatabaseContract.MessageTable.COLUMN_TIMEREAD));
+            int messageType = c.getInt(c.getColumnIndexOrThrow(DatabaseContract.MessageTable.));
+            Message info = new Message(mess, sendID, recID, timerec, timeread, messageType );
+            message.add(info);
+        }
+
+        return message;
+    }
+
+    public void displayMessages(){
+        //ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.select_dialog_item, messages);
+        messageAdapter adapter = new messageAdapter(this, messages);
+        ListView LV = (ListView)findViewById(R.id.contactMessages);
+        LV.setAdapter(adapter);
+    }
+
 }
