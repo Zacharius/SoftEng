@@ -18,7 +18,7 @@ import java.util.Date;
  */
 class SMAClientConnection implements Runnable {
     private Socket clientSocket;
-    private String clientID;
+    private String clientID = null;
     private PrintWriter out;
     private BufferedReader in;
     private Gson gson;
@@ -52,7 +52,7 @@ class SMAClientConnection implements Runnable {
         }catch(IOException e){
             // It tried to get away but we caught it. Hopefully this won't happen again.
         }
-        printServerLogMessage("connection terminated");
+        printServerLogMessage("connection with " + this.clientID + " terminated");
     }
 
     private void listenForIncomingRequests()throws IOException{

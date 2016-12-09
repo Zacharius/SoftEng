@@ -82,6 +82,7 @@ public class SMAProtocolHandler {
 
             // 3 indicates a change of password request.
             case 3:
+                System.out.println("[PROTOCOL LOG]: handling password change request");
                 SMAPasswordChangeRequest newPassword = gson.fromJson(input, SMAPasswordChangeRequest.class);
 
                 // Make a call to the DBAccess class to update password using the clientID parameter
@@ -93,9 +94,11 @@ public class SMAProtocolHandler {
                 }
                 break;
             case 4:
+                System.out.println("[PROTOCOL LOG}: handling contact request");
                 printClientLogMessage(clientID, "handling contact request");
                 return sendContactRequest(input, clientID);
             case 8:
+                System.out.println("[PROTOCOL LOG}: handling contact response");
                 SMAChangePublicKeyRequest newPublicKey = gson.fromJson(input, SMAChangePublicKeyRequest.class);
                 if(DBAccess.changePubKey(clientID, newPublicKey.getPublicKey())){
                     status = true;
@@ -103,7 +106,7 @@ public class SMAProtocolHandler {
                     reason = "failed to update public key";
                 }
                 break;
-            // 11 indicates the user is sending their response to a contact.
+            // 11 indicates the user is sending their response to a contact request.
             case 11:
                 printClientLogMessage(clientID, "handling contact response");
 
@@ -168,15 +171,17 @@ public class SMAProtocolHandler {
      */
     public String getOutgoingMessage(Message message){
         String output = null;
+        System.out.println("{PROTOCOL LOG]: message is of type " + message.getMessageType());
         switch (message.getMessageType()){
-
             // This is a contact request from a user.
-            case 4:
+            case 5:
+                System.out.println("[PROTOCOL LOG]: handling outgoing contact request");
                 output = getForwardContactRequestMessage(message);
                 break;
 
             // This is a contact response.
             case 11:
+                System.out.println("[PROTOCOL LOG]: handling forward contact response");
                 output = getForwardContactResponseMessage(message);
                 break;
 
@@ -187,7 +192,7 @@ public class SMAProtocolHandler {
 
 
     public String getForwardContactResponseMessage(Message message){
-        //  Set the key to the sender's if this request was accepted else null.
+        //  Set the key to the sender's if this request was accepted else null.;
         String publicKey = Boolean.parseBoolean(message.getContent()) ? DBAccess.getPublicKey(message.getSenderID()) : null;
 
         return gson.toJson(new SMAForwardContactResponseMessage(
@@ -205,6 +210,7 @@ public class SMAProtocolHandler {
      * @return a String representation of a contact request to be forwarded to a user.
      */
     public String getForwardContactRequestMessage(Message message){
+        System.out.println("[SERVER]: forwarding contact request");
         return gson.toJson(
                 new SMAForwardContactMessage(
                     10,
