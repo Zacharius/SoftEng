@@ -76,15 +76,17 @@ public class ContactDetailActivity extends AppCompatActivity
 
         ArrayList<Message> message = new ArrayList<>();
         String[] projection = {
-                DatabaseContract.MessageTable.COLUMN_SENDERID,
-                DatabaseContract.MessageTable.COLUMN_RECEIVERID,
+                DatabaseContract.MessageTable.COLUMN_CONTACT,
+                DatabaseContract.MessageTable.COLUMN_TIMEOUT,
                 DatabaseContract.MessageTable.COLUMN_CONTENT,
+                DatabaseContract.MessageTable.COLUMN_TYPE,
                 DatabaseContract.MessageTable.COLUMN_TIMEREC,
-                DatabaseContract.MessageTable.COLUMN_TIMEREAD
+                DatabaseContract.MessageTable.COLUMN_TIMEREAD,
+                DatabaseContract.MessageTable.COLUMN_MSGID
 
         };
 
-        String selection = DatabaseContract.MessageTable.COLUMN_SENDERID + "= ?";
+        String selection = DatabaseContract.MessageTable.COLUMN_CONTACT + "= ?";
         String[] selectionArgs = { con.getID() };
 
         String sortOrder =
@@ -104,12 +106,13 @@ public class ContactDetailActivity extends AppCompatActivity
         int num_message = c.getCount();
         for(int i = 0; i< num_message; i++) {
             String mess = c.getString(c.getColumnIndexOrThrow(DatabaseContract.MessageTable.COLUMN_CONTENT));
-            String sendID = c.getString(c.getColumnIndexOrThrow(DatabaseContract.MessageTable.COLUMN_SENDERID));
-            String recID = c.getString(c.getColumnIndexOrThrow(DatabaseContract.MessageTable.COLUMN_RECEIVERID));
+            String sendID = c.getString(c.getColumnIndexOrThrow(DatabaseContract.MessageTable.COLUMN_CONTACT));
+            int timeout = c.getInt(c.getColumnIndexOrThrow(DatabaseContract.MessageTable.COLUMN_TIMEOUT));
             int timerec = c.getInt(c.getColumnIndexOrThrow(DatabaseContract.MessageTable.COLUMN_TIMEREC));
             int timeread = c.getInt(c.getColumnIndexOrThrow(DatabaseContract.MessageTable.COLUMN_TIMEREAD));
-            int messageType = c.getInt(c.getColumnIndexOrThrow(DatabaseContract.MessageTable.));
-            Message info = new Message(mess, sendID, recID, timerec, timeread, messageType );
+            int messageType = c.getInt(c.getColumnIndexOrThrow(DatabaseContract.MessageTable.COLUMN_TYPE));
+            int messageID = c.getInt(c.getColumnIndexOrThrow(DatabaseContract.MessageTable.COLUMN_MSGID));
+            Message info = new Message(mess, sendID, timerec, timeread, timeout,messageID, messageType );
             message.add(info);
         }
 

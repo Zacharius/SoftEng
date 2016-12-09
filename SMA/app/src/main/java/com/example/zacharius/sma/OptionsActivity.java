@@ -71,6 +71,8 @@ public class OptionsActivity extends AppCompatActivity {
                         Log.d("OptionsActivity", "Requesting to add contact " + contact );
                         server.contactRequest(contact);
 
+                        mDbHelper = new DatabaseHelper(getApplicationContext());
+
                         db = mDbHelper.getReadableDatabase();
 
                         ContentValues values = new ContentValues();

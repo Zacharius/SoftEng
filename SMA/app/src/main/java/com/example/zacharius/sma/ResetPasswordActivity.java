@@ -1,7 +1,11 @@
 package com.example.zacharius.sma;
 
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -22,6 +26,7 @@ import static com.example.zacharius.sma.LoginActivity.context;
 public class ResetPasswordActivity extends AppCompatActivity {
     private String newPassword;
     private String passwordConfirm;
+    public ServerComm server;
 
 
     @Override
@@ -30,6 +35,25 @@ public class ResetPasswordActivity extends AppCompatActivity {
         setContentView(R.layout.activity_reset_password);
 
         Log.d("ResetPasswordActivity", "Activity starting");
+
+        ServiceConnection connector = new ServiceConnection()
+        {
+            @Override
+            public void onServiceConnected(ComponentName componentName, IBinder iBinder)
+            {
+                ServerComm.ServerBinder binder = (ServerComm.ServerBinder) iBinder;
+                server = binder.getServer();
+            }
+
+            @Override
+            public void onServiceDisconnected(ComponentName componentName)
+            {
+
+            }
+        };
+
+        Intent intent = new Intent(this, ServerComm.class);
+        bindService(intent, connector, Context.BIND_AUTO_CREATE);
 
 
     }
@@ -52,7 +76,7 @@ public class ResetPasswordActivity extends AppCompatActivity {
                 newPassword.length() <= 32 &&
                 newPassword.length() >= 8  &&
                  !found){
-            ServerComm.changePassword(newPassword);
+            server.changePassword(newPassword);
             Intent i = new Intent(view.getContext(), ContactListActivity.class);
             startActivity(i);
         }

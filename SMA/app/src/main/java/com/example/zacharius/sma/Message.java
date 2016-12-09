@@ -14,24 +14,27 @@ public class Message {
     private String content;
     private int time_rec;
     private int time_opened;
-    private String composserID;
+    private String contact;
     private int msgID;
     private int msgType;
+    private int timeout;
 
-    public Message(String cont, String compID, int timeRec, int msgID, int msgType ){
-        this.content = cont;
-        this.composserID = compID;
+    public Message(String content, String contact, int timeRec,int time_opened, int timeout, int msgID, int msgType ){
+        this.content = content;
+        this.contact = contact;
         this.time_rec = timeRec;
         this.msgID = msgID;
         this.msgType = msgType;
+        this.timeout = timeout;
+        this.time_opened = time_opened;
     }
 
     public String getContent(){
         return content;
     }
 
-    public String getComposser(){
-        return composserID;
+    public String getContact(){
+        return contact;
     }
 
     public int getTime_rec(){
@@ -42,9 +45,7 @@ public class Message {
         return time_opened;
     }
 
-    public void setTime_opened(){
-        this.time_opened = time_rec;
-    }
+    public int getTimeout(){ return timeout; }
 
     public int getMsgID() {return msgID; }
 
