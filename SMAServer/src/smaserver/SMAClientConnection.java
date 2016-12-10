@@ -54,12 +54,12 @@ class SMAClientConnection implements Runnable {
         }
 
         // Print an appropriate log message depending on whether or not the client authenticated.
-        if(this.clientID){
-            printClientLogMessage("terminted connection");
+        if(this.clientID == null){
+            printClientLogMessage("terminated connection");
         }else {
             printServerLogMessage("client disconnected without authenticating");
         }
-        
+
         this.clientOutPutThread.interrupt();
     }
 

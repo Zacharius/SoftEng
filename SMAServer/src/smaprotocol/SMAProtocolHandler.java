@@ -97,6 +97,12 @@ public class SMAProtocolHandler {
                 System.out.println("[PROTOCOL LOG}: handling contact request");
                 printClientLogMessage(clientID, "handling contact request");
                 return sendContactRequest(input, clientID);
+
+            // Type 6 indicates the user is sending a text message;
+            case 6:
+                return formatTextMessageServerReply(clientID, input);
+
+            // Type 8 indicates the user is changing their public key.
             case 8:
                 System.out.println("[PROTOCOL LOG}: changing public key");
                 SMAChangePublicKeyRequest newPublicKey = gson.fromJson(input, SMAChangePublicKeyRequest.class);
@@ -125,6 +131,28 @@ public class SMAProtocolHandler {
         return gson.toJson(response);
     }
 
+    public String formatTextMessageServerReply(String clientID, String input){
+        boolean status = false;
+        String reason = null;
+
+        SMATextMessage message = gson.fromJson(input, SMATextMessage.class);
+
+        // Attempt to add this new message to the database.
+        if(DBAccess.addMessage(clientID, message.getRecipientID(), message.getContent(), message.getTimeout(), 7, 0)){
+            status = true;
+        }else{
+            reason = "DB ACCESS FAILURE: message could not be sent";
+        }
+
+        // Return a json formatted SMANetWorkResponse using our status and reason.
+        return gson.toJson(new SMANetworkResponse(
+                2,
+                0,
+                status,
+                reason
+        ));
+    }
+
     public String formatContactResponseServerReply(String input, String clientID){
         boolean status = false;
         String reason = null;
@@ -138,7 +166,7 @@ public class SMAProtocolHandler {
                 clientID,
                 contactResponse.getRecipientID(),
                 String.valueOf(contactResponse.isStatus()),
-                new Timestamp(Calendar.getInstance().get(Calendar.MILLISECOND)),
+                0,
                 13,
                 contactResponse.getMessageID())
                 ) {
@@ -173,15 +201,22 @@ public class SMAProtocolHandler {
         String output = null;
         System.out.println("{PROTOCOL LOG]: message is of type " + message.getMessageType());
         switch (message.getMessageType()){
-            // This is a contact request from a user.
+
+            // Type 7 is a forwarded text message;
+            case 7:
+                System.out.println("[PROTOCOL LOG]: handling forward text message");
+                output = getForwardTextMessage(message);
+                break;
+
+            // Type 10 is a forwarded contact request from a user.
             case 10:
-                System.out.println("[PROTOCOL LOG]: handling outgoing contact request");
+                System.out.println("[PROTOCOL LOG]: handling forwarded contact request");
                 output = getForwardContactRequestMessage(message);
                 break;
 
-            // This is a contact response.
+            // Type 13 is a forwarded contact response.
             case 13:
-                System.out.println("[PROTOCOL LOG]: handling forward contact response");
+                System.out.println("[PROTOCOL LOG]: handling forwarded contact response");
                 output = getForwardContactResponseMessage(message);
                 break;
 
@@ -190,7 +225,16 @@ public class SMAProtocolHandler {
         return output;
     }
 
-
+    public String getForwardTextMessage(Message message){
+        return gson.toJson(new SMAForwardTextMessage(
+                message.getMessageType(),
+                message.getMessageID(),
+                message.getSenderID(),
+                message.getTimeRec(),
+                message.getTime2Read(),
+                message.getContent()
+        ));
+    }
     public String getForwardContactResponseMessage(Message message){
         //  Set the key to the sender's if this request was accepted else null.;
         String publicKey = Boolean.parseBoolean(message.getContent()) ? DBAccess.getPublicKey(message.getSenderID()) : null;
@@ -245,7 +289,7 @@ public class SMAProtocolHandler {
         }else{
             printClientLogMessage(clientID, contactRequest.getRecipient() + " exists, routing request");
             // Insert this message into the database to be sent later.
-            if(!DBAccess.addMessage(clientID, contactRequest.getRecipient(), null, new Timestamp(Calendar.getInstance().get(Calendar.MILLISECOND)), 10, contactRequest.getMessageID())){
+            if(!DBAccess.addMessage(clientID, contactRequest.getRecipient(), null, 0, 10, contactRequest.getMessageID())){
                 printClientLogMessage(clientID, "request could not be sent, database access failed");
                 return gson.toJson(new SMAContactRequestServerResponse(
                         9,
