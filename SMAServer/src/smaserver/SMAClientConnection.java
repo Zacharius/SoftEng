@@ -52,7 +52,15 @@ class SMAClientConnection implements Runnable {
         }catch(IOException e){
             // It tried to get away but we caught it. Hopefully this won't happen again.
         }
-        printServerLogMessage("connection with " + this.clientID + " terminated");
+
+        // Print an appropriate log message depending on whether or not the client authenticated.
+        if(this.clientID){
+            printClientLogMessage("terminted connection");
+        }else {
+            printServerLogMessage("client disconnected without authenticating");
+        }
+        
+        this.clientOutPutThread.interrupt();
     }
 
     private void listenForIncomingRequests()throws IOException{

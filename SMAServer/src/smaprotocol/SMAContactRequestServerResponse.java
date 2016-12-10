@@ -1,27 +1,18 @@
 package smaprotocol;
 
 /**
- * Created by elijah on 12/7/2016.
+ * Created by elijah on 12/9/2016.
  */
-public class SMAContactResponseServerReply {
+public class SMAContactRequestServerResponse {
     private int messageType;
     private String contactID;
     private boolean status;
     private String reason;
-    private String publicKey;
-
-    public SMAContactResponseServerReply(
-            int messageType,
-            String contactID,
-            boolean status,
-            String reason,
-            String publicKey)
-    {
+    public SMAContactRequestServerResponse(int messageType, String contactID, boolean status, String reason){
         this.messageType = messageType;
         this.contactID = contactID;
         this.status = status;
         this.reason = reason;
-        this.publicKey = publicKey;
     }
 
     public int getMessageType() {
@@ -38,9 +29,5 @@ public class SMAContactResponseServerReply {
 
     public String getReason() {
         return reason;
-    }
-
-    public String getPublicKey() {
-        return publicKey;
     }
 }

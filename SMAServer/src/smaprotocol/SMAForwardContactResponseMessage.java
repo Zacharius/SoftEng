@@ -6,20 +6,20 @@ package smaprotocol;
 public class SMAForwardContactResponseMessage {
     private int messageType;
     private int messageID;
-    private String senderID;
+    private String contactID;
     private boolean status;
     private String publicKey;
 
     public SMAForwardContactResponseMessage(
             int messageType,
             int messageID,
-            String senderID,
+            String contactID,
             boolean status,
             String publicKey)
     {
         this.messageType = messageType;
         this.messageID = messageID;
-        this.senderID = senderID;
+        this.contactID = contactID;
         this.status = status;
         this.publicKey = publicKey;
     }
@@ -32,8 +32,8 @@ public class SMAForwardContactResponseMessage {
         return messageID;
     }
 
-    public String getSenderID() {
-        return senderID;
+    public String getContactID() {
+        return contactID;
     }
 
     public boolean isStatus() {

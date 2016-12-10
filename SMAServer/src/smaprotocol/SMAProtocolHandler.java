@@ -98,7 +98,7 @@ public class SMAProtocolHandler {
                 printClientLogMessage(clientID, "handling contact request");
                 return sendContactRequest(input, clientID);
             case 8:
-                System.out.println("[PROTOCOL LOG}: handling contact response");
+                System.out.println("[PROTOCOL LOG}: changing public key");
                 SMAChangePublicKeyRequest newPublicKey = gson.fromJson(input, SMAChangePublicKeyRequest.class);
                 if(DBAccess.changePubKey(clientID, newPublicKey.getPublicKey())){
                     status = true;
@@ -139,7 +139,7 @@ public class SMAProtocolHandler {
                 contactResponse.getRecipientID(),
                 String.valueOf(contactResponse.isStatus()),
                 new Timestamp(Calendar.getInstance().get(Calendar.MILLISECOND)),
-                11,
+                13,
                 contactResponse.getMessageID())
                 ) {
             status = true;
@@ -156,7 +156,7 @@ public class SMAProtocolHandler {
 
         return gson.toJson(new SMAContactResponseServerReply(
                 12,
-                contactResponse.getMessageID(),
+                contactResponse.getRecipientID(),
                 status,
                 reason,
                 key
@@ -174,13 +174,13 @@ public class SMAProtocolHandler {
         System.out.println("{PROTOCOL LOG]: message is of type " + message.getMessageType());
         switch (message.getMessageType()){
             // This is a contact request from a user.
-            case 5:
+            case 10:
                 System.out.println("[PROTOCOL LOG]: handling outgoing contact request");
                 output = getForwardContactRequestMessage(message);
                 break;
 
             // This is a contact response.
-            case 11:
+            case 13:
                 System.out.println("[PROTOCOL LOG]: handling forward contact response");
                 output = getForwardContactResponseMessage(message);
                 break;
@@ -196,7 +196,7 @@ public class SMAProtocolHandler {
         String publicKey = Boolean.parseBoolean(message.getContent()) ? DBAccess.getPublicKey(message.getSenderID()) : null;
 
         return gson.toJson(new SMAForwardContactResponseMessage(
-                5,
+                13,
                 message.getMessageID(),
                 message.getSenderID(),
                 Boolean.parseBoolean(message.getContent()),
@@ -236,28 +236,28 @@ public class SMAProtocolHandler {
         if(!DBAccess.userExists(contactRequest.getRecipient())){
 
             printClientLogMessage(clientID, "contact request failed, " + contactRequest.getRecipient() + " does not exist");
-            return gson.toJson(new SMANetworkResponse(
+            return gson.toJson(new SMAContactRequestServerResponse(
                     9,
-                    contactRequest.getMessageID(),
+                    contactRequest.getRecipient(),
                     false,
                     "INVALID USER: user does not exist"
             ));
         }else{
             printClientLogMessage(clientID, contactRequest.getRecipient() + " exists, routing request");
             // Insert this message into the database to be sent later.
-            if(!DBAccess.addMessage(clientID, contactRequest.getRecipient(), null, new Timestamp(Calendar.getInstance().get(Calendar.MILLISECOND)), 5, contactRequest.getMessageID())){
+            if(!DBAccess.addMessage(clientID, contactRequest.getRecipient(), null, new Timestamp(Calendar.getInstance().get(Calendar.MILLISECOND)), 10, contactRequest.getMessageID())){
                 printClientLogMessage(clientID, "request could not be sent, database access failed");
-                return gson.toJson(new SMANetworkResponse(
+                return gson.toJson(new SMAContactRequestServerResponse(
                         9,
-                        contactRequest.getMessageID(),
+                        contactRequest.getRecipient(),
                         false,
                         "DB ACCESS FAILURE: could not route contact request"
                 ));
             }else{
                 printClientLogMessage(clientID, "request sent");
-                return gson.toJson(new SMANetworkResponse(
+                return gson.toJson(new SMAContactRequestServerResponse(
                         9,
-                        contactRequest.getMessageID(),
+                        contactRequest.getRecipient(),
                         true,
                         null
                 ));

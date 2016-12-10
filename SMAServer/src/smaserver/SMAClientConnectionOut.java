@@ -59,6 +59,7 @@ class SMAClientConnectionOut implements Runnable {
                 Thread.sleep(5000);
             }catch(Exception e) {
                 // Why do they keep trying to escape? Should we call a professional?
+                break;
             }
         }
         printClientLogMessage("output thread stopping");
