@@ -182,7 +182,7 @@ public class DBAccess {
 			rs = statement.executeQuery("SELECT * FROM message WHERE ReceiverID = '" + receiver + "';");
 
 			while (rs.next()) {
-				Message msg = new Message(rs.getString(1), rs.getString(2), rs.getString(3), rs.getTimestamp(4), rs.getTimestamp(5), rs.getInt(6), rs.getInt(7), rs.getInt(8));
+				Message msg = new Message(rs.getString(1), rs.getString(2), rs.getString(3), rs.getTimestamp(4), rs.getInt(5), rs.getInt(6), rs.getInt(7), rs.getInt(8));
 				messages.add(msg);
 			}
 		}
@@ -367,7 +367,7 @@ public class DBAccess {
 	}
 	
 	public static boolean addMessage(String sender, String receiver
-		, String content, Timestamp time2read, int messageType
+		, String content, int time2read, int messageType
 		, int messageID) {
 		Connection con=null;
 		Statement statement=null;
@@ -378,7 +378,7 @@ public class DBAccess {
 			con = DriverManager.getConnection(
 				"jdbc:mysql://localhost/server?autoReconnect=true&useSSL=false", "java", "lugubr!ous19m1en");
 			Timestamp currentTime = new Timestamp(System.currentTimeMillis());
-			String sqlComm = "INSERT INTO message VALUES ('" + sender + "', '" + receiver + "', '" + content + "', '" + currentTime.toString() + "', '" + time2read.toString() + "', " + messageType + ", " + messageID + ", NULL);";
+			String sqlComm = "INSERT INTO message VALUES ('" + sender + "', '" + receiver + "', '" + content + "', '" + currentTime.toString() + "', '" + time2read + "', " + messageType + ", " + messageID + ", NULL);";
 			statement = con.createStatement();
 			
 			statement.executeUpdate(sqlComm);
