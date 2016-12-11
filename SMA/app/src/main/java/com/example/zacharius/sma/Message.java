@@ -12,14 +12,14 @@ public class Message {
 
 
     private String content;
-    private int time_rec;
-    private int time_opened;
+    private long time_rec;
+    private long time_opened;
     private String contact;
-    private int msgID;
+    private long msgID;
     private int msgType;
-    private int timeout;
+    private long timeout;
 
-    public Message(String content, String contact, int timeRec,int time_opened, int timeout, int msgID, int msgType ){
+    public Message(String content, String contact, long timeRec, long time_opened, long timeout, long msgID, int msgType ){
         this.content = content;
         this.contact = contact;
         this.time_rec = timeRec;
@@ -37,17 +37,17 @@ public class Message {
         return contact;
     }
 
-    public int getTime_rec(){
+    public long getTime_rec(){
         return time_rec;
     }
 
-    public int getTime_opened(){
+    public long getTime_opened(){
         return time_opened;
     }
 
-    public int getTimeout(){ return timeout; }
+    public long getTimeout(){ return timeout; }
 
-    public int getMsgID() {return msgID; }
+    public long getMsgID() {return msgID; }
 
     public int getMsgType() { return msgType; }
 }
