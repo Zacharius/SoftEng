@@ -77,28 +77,11 @@ public class ServerComm extends Service
     public void writeServer(JSONObject object)
     {
 
-        try
-        {
-
-            if(server != null){
-                PrintWriter write = new PrintWriter(server.getOutputStream(), true);
-                System.out.println(object.toString());
-                write.println(object.toString());
-                messageID++;
-
-            }
-            else{
-                System.out.print("Server object is null");
-            }
-
-
-
-        } catch (Exception e)
-        {
-            e.printStackTrace();
-        }
+        ServerWriter serverWriter = new ServerWriter(object);
+        (new Thread(serverWriter)).start();
 
     }
+
     public void checkCredentials(String id, String password)
     {
 
@@ -173,6 +156,24 @@ public class ServerComm extends Service
         }
     }
 
+    public void contactResponse(String contactID, boolean response)
+    {
+        Log.d("ServerComm", "accepting contact request for " + contactID);
+
+        JSONObject json = new JSONObject();
+
+        try{
+            json.put("messageType", 11);
+            json.put("messageID", messageID);
+            json.put("recipientID", contactID);
+            json.put("status", response);
+
+            writeServer(json);
+        }catch (JSONException e){
+            e.printStackTrace();
+        }
+    }
+
     public void sendText(String contactID, int timeout, String content)
     {
         Log.d("ServerComm", "sending text for " + contactID + " to server");
@@ -192,6 +193,44 @@ public class ServerComm extends Service
         }catch (JSONException e){
             e.printStackTrace();
         }
+    }
+
+    public class ServerWriter implements Runnable
+    {
+        JSONObject object;
+        public ServerWriter(JSONObject object)
+        {
+            this.object = object;
+        }
+
+        @Override
+        public void run()
+        {
+            try
+            {
+
+                if(server != null){
+                    PrintWriter write = new PrintWriter(server.getOutputStream(), true);
+                    Log.d("ServerWriter", object.toString());
+                    write.println(object.toString());
+                    messageID++;
+
+                }
+                else{
+                    Log.d("ServerWriter","Server object is null");
+                }
+
+
+
+            } catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+
+        }
+
+
+
     }
 
 
@@ -236,9 +275,8 @@ public class ServerComm extends Service
 
                         JSONObject object = new JSONObject(serverMsg);
                         int messageType = object.getInt("messageType");
-                        String messageID = object.getString("messageID");
                         boolean status;
-                        String id;
+                        String reason, key, id;
 
                         switch (messageType)
                         {
@@ -254,31 +292,36 @@ public class ServerComm extends Service
                                     LoginActivity.errMsg = object.getString("reason");
                                 }
                                 break;
-                            case 5://accepted contact
+                            case 12://contact response server reply
                                 status = object.getBoolean("status");
-                                id = object.getString("senderID");
+                                id = object.getString("contactID");
                                 if(status)
                                 {
-                                    Log.d("ServerListener", "Accepted Contact " + id);
-                                    Toast.makeText(this, "Accepted Contact " + id, Toast.LENGTH_SHORT);
-
+                                    Log.d("ServerListener", "Server has succesfully added " + id + " to your contact list");
                                     db = helper.getWritableDatabase();
 
                                     values = new ContentValues();
-                                    values.put(DatabaseContract.ContactTable.COLUMN_USERID, id);
                                     values.put(DatabaseContract.ContactTable.COLUMN_NICKNAME, id);
                                     values.put(DatabaseContract.ContactTable.COLUMN_STATUS, 0);
 
-                                    String key = object.getString("publicKey");
+                                    key = object.getString("publicKey");
                                     values.put(DatabaseContract.ContactTable.COLUMN_KEY, key);
 
-                                    db.insert(DatabaseContract.ContactTable.TABLE_NAME, null, values);
+                                    String selection = DatabaseContract.ContactTable.COLUMN_USERID + " LIKE ?";
+                                    String [] selectionArgs = { id };
+
+                                    db.update(
+                                            DatabaseContract.ContactTable.TABLE_NAME,
+                                            values,
+                                            selection,
+                                            selectionArgs);
                                     db.close();
+
                                 }
                                 else
                                 {
                                     Log.d("ServerListener", "Denied Contact " + id);
-                                    Toast.makeText(this, "Denied Contact " + id, Toast.LENGTH_SHORT);
+                                    Toast.makeText(this, "Denied Contact " + id, Toast.LENGTH_SHORT).show();
                                 }
                                 break;
                             case 6://receive message
@@ -299,7 +342,96 @@ public class ServerComm extends Service
 
                                 db.insert(DatabaseContract.MessageTable.TABLE_NAME, null, values);
                                 db.close();
+                                break;
+                            case 9://accepted contact request
+                                status = object.getBoolean("status");
+                                id = object.getString("contactID");
+                                if(status)
+                                {
+                                    Log.d("ServerListener", "Server has accepted Contact Request for " + id);
+                                    Toast.makeText(this, "Server has accepted Contact Request for " + id, Toast.LENGTH_SHORT).show();
 
+                                    db = helper.getWritableDatabase();
+                                    values = new ContentValues();
+
+
+                                    values.put(DatabaseContract.ContactTable.COLUMN_USERID, id);
+                                    values.put(DatabaseContract.ContactTable.COLUMN_STATUS, 1);
+
+                                    db.insert(DatabaseContract.ContactTable.TABLE_NAME, null, values);
+                                    db.close();
+                                }
+                                else
+                                {
+                                    reason = object.getString("reason");
+
+                                    Log.d("ServerListener", "Server has denied Contact Request for " + id + ": " + reason);
+                                    Toast.makeText(this, "Server has denied Contact Request for " + id + ": " + reason, Toast.LENGTH_SHORT).show();
+                                }
+                                break;
+                            case 10://Forwarded Contact Request
+                                id = object.getString("senderID");
+
+                                Log.d("ServerListener", id + " has requested you as a contact");
+                                Toast.makeText(this, id + " has requested you as a contact", Toast.LENGTH_SHORT).show();
+
+                                db = helper.getWritableDatabase();
+                                values = new ContentValues();
+
+
+                                values.put(DatabaseContract.ContactTable.COLUMN_USERID, id);
+                                values.put(DatabaseContract.ContactTable.COLUMN_STATUS, 2);
+
+                                db.insert(DatabaseContract.ContactTable.TABLE_NAME, null, values);
+                                db.close();
+                                break;
+                            case 13://contact response reply
+                                status = object.getBoolean("status");
+                                id = object.getString("contactID");
+
+                                db = helper.getWritableDatabase();
+                                values = new ContentValues();
+
+                                if(status)
+                                {
+
+                                    Log.d("ServerListener", id + " has accepted you as a contact");
+                                    Toast.makeText(this, id + " has accepted us you a contact", Toast.LENGTH_SHORT).show();
+
+
+                                    key = object.getString("publicKey");
+
+                                    values.put(DatabaseContract.ContactTable.COLUMN_NICKNAME, id);
+                                    values.put(DatabaseContract.ContactTable.COLUMN_STATUS, 0);
+                                    values.put(DatabaseContract.ContactTable.COLUMN_KEY, key);
+
+                                    String selection = DatabaseContract.ContactTable.COLUMN_USERID + " LIKE ?";
+                                    String [] selectionArgs = { id };
+
+                                    db.update(
+                                            DatabaseContract.ContactTable.TABLE_NAME,
+                                            values,
+                                            selection,
+                                            selectionArgs);
+                                    db.close();
+                                }
+                                else{
+                                    reason = object.getString("reason");
+
+                                    Log.d("ServerListener", id + " has denied Contact Request :" + reason);
+                                    Toast.makeText(this, id + " has denied Contact Request for :" + reason, Toast.LENGTH_SHORT).show();
+
+                                    String selection = DatabaseContract.ContactTable.COLUMN_USERID + " LIKE ?";
+                                    String [] selectionArgs = { id };
+
+                                    db.delete(DatabaseContract.ContactTable.TABLE_NAME, selection, selectionArgs);
+                                    db.close();
+                                }
+
+
+                            default://unknown message
+                                Log.d("ServerListener", "Unknwon Message from Server");
+                                Toast.makeText(this, "Unknown Message from server", Toast.LENGTH_SHORT).show();
                         }
                     }
             }catch (Exception e)

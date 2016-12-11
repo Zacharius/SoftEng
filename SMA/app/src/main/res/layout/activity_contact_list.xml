@@ -10,6 +10,16 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".ContactListActivity">
 
+
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="left"
+        android:text="Pending Contacts"
+        android:onClick="onClickPendingContacts"
+        android:id="@+id/PendingContactsButton"/>
+
     <Button
         android:layout_width="25dp"
         android:layout_height="25dp"
@@ -18,11 +28,12 @@
         android:onClick="onClickOptions"
         android:id="@+id/optionsButton"/>
 
-
     <ListView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/contacts"/>
+        android:id="@+id/contacts"
+        android:layout_column="16"/>
+
 
 
 

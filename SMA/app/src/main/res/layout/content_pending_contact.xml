@@ -17,7 +17,8 @@
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Pending Contacts"/>
+        android:text="Pending Contacts"
+        android:id="@+id/pendingText"/>
 
     <ListView
         android:layout_width="match_parent"
@@ -27,7 +28,8 @@
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Requested Contacts"/>
+        android:text="Requested Contacts"
+        android:id="@+id/requestedText"/>
 
     <ListView
         android:layout_width="match_parent"

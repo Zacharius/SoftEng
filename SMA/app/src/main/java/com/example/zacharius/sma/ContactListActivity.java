@@ -117,18 +117,81 @@ public class ContactListActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    protected void onResume()
+    {
+        super.onResume();
+
+        //get context of the database and create/open for reading.
+        mDbHelper = new DatabaseHelper(getApplicationContext());
+
+        db = mDbHelper.getReadableDatabase();
+        // define a projection that specifies which columns you
+        // actually use after this query
+        String[] projection = {
+
+                DatabaseContract.ContactTable.COLUMN_USERID,
+                DatabaseContract.ContactTable.COLUMN_NICKNAME,
+
+        };
+
+        // query the data base for contacts
+        Cursor c = db.query(
+                DatabaseContract.ContactTable.TABLE_NAME,           // the table to query
+                projection,                                         // the columns to return
+                null,                                               // the columns for the WHERE clause
+                null,                                               // the values for the WHERE clause
+                null,                                               // grouping of the rows
+                null,                                               // filter by row
+                null                                                // sort order
+        );
+
+
+        //grab Contacts ListView
+        contactsView = (ListView) findViewById(R.id.contacts);
+
+        // add contacts to an array list
+        int numberOfContacts = c.getCount();
+        final ArrayList<String> contactList =  new ArrayList<String>();
+        c.moveToFirst();
+        for(int i = 0; i < numberOfContacts; i++){
+            String nextContact = c.getString(c.getColumnIndexOrThrow(DatabaseContract.ContactTable.COLUMN_NICKNAME));
+            if(nextContact == null)
+            {
+                Log.d("ContactListActivity", "contact " + c.getString(c.getColumnIndex(DatabaseContract.ContactTable.COLUMN_USERID))+ " has no nickname, excluding from listview");
+            }
+            else{
+                contactList.add(nextContact);
+            }
+            c.moveToNext();
+
+        }
+
+
+        c.close();
+
+
+        //bind contactList to list, an ArrayAdapter
+        list = new ArrayAdapter<>(getApplicationContext(), android.R.layout.simple_list_item_1, contactList);
+
+
+        //bind list(arrayadapter) to contactView
+        contactsView.setAdapter(list);
+    }
 
     /*
-    Options button
-     */
+        Options button
+         */
     public void onClickOptions(View v)
     {
         Intent intent = new Intent(getApplicationContext(), OptionsActivity.class);
         startActivity(intent);
     }
 
-
-
-
+    public void onClickPendingContacts(View v)
+    {
+        Intent intent = new Intent(this, PendingContactActivity.class);
+        startActivity(intent);
+    }
 
 }

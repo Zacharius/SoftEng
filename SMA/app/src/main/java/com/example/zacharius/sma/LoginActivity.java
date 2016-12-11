@@ -83,9 +83,17 @@ public class LoginActivity extends AppCompatActivity
         startService(intent);
         bindService(intent, connector, Context.BIND_AUTO_CREATE);
 
+
         /*server = new ServerComm("198.27.65.177", 4269);
         Intent serverListener = new Intent(getApplicationContext(), ServerComm.ServerListener.class);
         getApplicationContext().startService(serverListener);*/
+    }
+
+    protected void onDestroy()
+    {
+        super.onDestroy();
+
+        unbindService(connector);
     }
 
 
@@ -132,17 +140,7 @@ public class LoginActivity extends AppCompatActivity
         LoginActivity.logIn = login;
     }
 
-    public void showToast(final String toast)
-    {
-        runOnUiThread(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                Toast.makeText(getApplicationContext(), toast, Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
+
 
     public class Login extends AsyncTask<String, Void, Integer>
     {

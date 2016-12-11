@@ -1,5 +1,6 @@
 package com.example.zacharius.sma;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.ComponentName;
 import android.content.ContentValues;
@@ -11,16 +12,13 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
-import android.widget.TextView;
 
 import java.security.KeyPair;
 import java.security.PrivateKey;
@@ -30,7 +28,8 @@ import java.security.PublicKey;
  * Created by jakew on 10/29/2016.
  */
 
-public class OptionsActivity extends AppCompatActivity {
+public class OptionsActivity extends Activity
+{
 
     Spinner delete_rec;
     Spinner delete_send;
@@ -38,12 +37,26 @@ public class OptionsActivity extends AppCompatActivity {
     DatabaseHelper mDbHelper;
     SQLiteDatabase db;
     ServerComm server;
+    ServiceConnection connector = new ServiceConnection()
+    {
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder iBinder)
+        {
+            ServerComm.ServerBinder binder = (ServerComm.ServerBinder) iBinder;
+            server = binder.getServer();
+        }
 
+        @Override
+        public void onServiceDisconnected(ComponentName componentName)
+        {
+
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.options);
+        setContentView(R.layout.activity_options);
         delete_rec = (Spinner) findViewById(R.id.spinner);
         delete_send = (Spinner) findViewById(R.id.spinner);
         delete_adapter = ArrayAdapter.createFromResource(this, R.array.deleteOptions, android.R.layout.simple_spinner_item);
@@ -51,14 +64,19 @@ public class OptionsActivity extends AppCompatActivity {
         delete_send.setAdapter(delete_adapter);
         delete_rec.setAdapter(delete_adapter);
 
-        Button showDialog = (Button) findViewById(R.id.addContactButton);
+
+
+        Intent intent = new Intent(this, ServerComm.class);
+        bindService(intent, connector, Context.BIND_AUTO_CREATE);
+
+        Button addContact = (Button) findViewById(R.id.addContactButton);
         //TextView enterUserID = new (TextView) findViewById(R.id.contactAdd);
 
-        showDialog.setOnClickListener(new View.OnClickListener() {
+        addContact.setOnClickListener(new View.OnClickListener() {
 
             public void onClick(View v) {
 
-                View view = (LayoutInflater.from(OptionsActivity.this)).inflate(R.layout.activity_add_contact, null);
+                View view = (LayoutInflater.from(OptionsActivity.this)).inflate(R.layout.add_contact, null);
 
                 AlertDialog.Builder alertBuilder = new AlertDialog.Builder(OptionsActivity.this);
                 alertBuilder.setView(view);
@@ -91,24 +109,6 @@ public class OptionsActivity extends AppCompatActivity {
 
         });
 
-        ServiceConnection connector = new ServiceConnection()
-        {
-            @Override
-            public void onServiceConnected(ComponentName componentName, IBinder iBinder)
-            {
-                ServerComm.ServerBinder binder = (ServerComm.ServerBinder) iBinder;
-                server = binder.getServer();
-            }
-
-            @Override
-            public void onServiceDisconnected(ComponentName componentName)
-            {
-
-            }
-        };
-
-        Intent intent = new Intent(this, ServerComm.class);
-        bindService(intent, connector, Context.BIND_AUTO_CREATE);
     }
 
     public void onClickDelete(View v) {
@@ -166,6 +166,12 @@ public class OptionsActivity extends AppCompatActivity {
 
 
 
+    }
+
+    protected  void onDestroy()
+    {
+        super.onDestroy();
+        unbindService(connector);
     }
 
 

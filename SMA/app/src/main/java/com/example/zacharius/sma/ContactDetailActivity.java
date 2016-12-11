@@ -90,7 +90,7 @@ public class ContactDetailActivity extends AppCompatActivity
         String[] selectionArgs = { con.getID() };
 
         String sortOrder =
-                DatabaseContract.MessageTable.COLUMN_TIMEREC + "DESC";
+                DatabaseContract.MessageTable.COLUMN_TIMEREC + " DESC";
 
         Cursor c = db.query(
                 DatabaseContract.MessageTable.TABLE_NAME,
