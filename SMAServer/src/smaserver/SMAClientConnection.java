@@ -2,6 +2,7 @@ package smaserver;
 
 
 import com.google.gson.Gson;
+import smaprotocol.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -15,16 +16,16 @@ import java.util.Date;
 /**
  * Created by elijah on 11/14/2016.
  */
-public class SMAClientConnection implements Runnable {
+class SMAClientConnection implements Runnable {
     private Socket clientSocket;
-    private String clientID;
+    private String clientID = null;
     private PrintWriter out;
     private BufferedReader in;
     private Gson gson;
     private SMAProtocolHandler handler;
     private Thread clientOutPutThread;
 
-    public SMAClientConnection(Socket client)throws IOException{
+    SMAClientConnection(Socket client)throws IOException{
         this.clientSocket = client;
         gson = new Gson();
         handler = new SMAProtocolHandler(gson);
@@ -51,7 +52,15 @@ public class SMAClientConnection implements Runnable {
         }catch(IOException e){
             // It tried to get away but we caught it. Hopefully this won't happen again.
         }
-        printServerLogMessage("connection terminated");
+
+        // Print an appropriate log message depending on whether or not the client authenticated.
+        if(this.clientID == null){
+            printClientLogMessage("terminated connection");
+        }else {
+            printServerLogMessage("client disconnected without authenticating");
+        }
+
+        this.clientOutPutThread.interrupt();
     }
 
     private void listenForIncomingRequests()throws IOException{

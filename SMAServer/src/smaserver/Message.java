@@ -7,11 +7,11 @@ public class Message {
 	private String receiverID;
 	private String content;
 	private Timestamp timeRec;
-	private Timestamp time2Read;
+	private int time2Read;
 	private int messageType;
 	private int messageID;
 	private int ID;
-	public Message(String s, String r, String c, Timestamp tr, Timestamp t2, int mt, int mi, int id) {
+	public Message(String s, String r, String c, Timestamp tr, int t2, int mt, int mi, int id) {
 		senderID = s;
 		receiverID = r;
 		content = c;
@@ -26,7 +26,7 @@ public class Message {
 	public String getReceiverID() { return receiverID; }
 	public String getContent() { return content; }
 	public Timestamp getTimeRec() { return timeRec; }
-	public Timestamp getTime2Read() { return time2Read; }
+	public int getTime2Read() { return time2Read; }
 	public int getMessageType() { return messageType; }
 	public int getMessageID() { return messageID; }
 	public int getID() { return ID; }

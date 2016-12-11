@@ -84,11 +84,11 @@ import java.io.InputStreamReader;
      * Prints all the help info for admin console.
      */
     private void printHelp(){
-        System.out.println("SMA Commands:\n" +
+        System.out.println("\nSMA Commands:\n" +
                            "    /help                                       shows a list of commands and their usage\n" +
                            "    /adduser [user ID] [password]               adds a user with the ide and password specified\n" +
                            "    /shutdown                                   gracefully shut down the server\n" +
-                           "    /togglelog                                  turn console logging on and off" +
-                           "    /changepassword [user ID] [new password]    change the password for the given user");
+                           "    /togglelog                                  turn console logging on and off\n" +
+                           "    /changepassword [user ID] [new password]    change the password for the given user\n");
     }
 }

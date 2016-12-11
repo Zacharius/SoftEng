@@ -2,6 +2,7 @@
 	Created by Nick Dix
 */
 package smaserver;
+
 import java.sql.*;
 import java.util.*;
 
@@ -36,6 +37,7 @@ class Message {
 	public int getID() { return ID; }
 }
 */
+
 public class DBAccess {
 	public static void main(String args[]) {
 		/*
@@ -60,14 +62,14 @@ public class DBAccess {
 			+ DBAccess.deleteMessage(1, true));
 			//+ DBAccess.addMessage("blob", "bolb", "This is a sentence.", 
 			//time, 0, 0));
-		*/
 		Timestamp time = new Timestamp(System.currentTimeMillis());
 		DBAccess.addMessage("sender", "receiver", "content", time, -1, -1);
 		ArrayList<Message> m = DBAccess.getMessages("receiver");
 		System.out.println(m);
 		int id = (m.get(0)).getID();
-		System.out.println(id);
-		System.out.println(DBAccess.deleteMessage(id, false));
+		System.out.println(id);*/
+		
+		System.out.println(DBAccess.getPublicKey("PardonMeSir"));
 		System.exit(0);
 	}
 
@@ -118,6 +120,53 @@ public class DBAccess {
 		}
 	}
 	
+	public static String getPublicKey(String id) {
+		Connection con=null;
+		Statement statement=null;
+		ResultSet rs=null;
+		String publicKey="";
+		
+		try {
+			Class.forName("com.mysql.jdbc.Driver");
+			con = DriverManager.getConnection(
+				"jdbc:mysql://localhost/server?autoReconnect=true&useSSL=false", "java", "lugubr!ous19m1en");
+
+			statement = con.createStatement();
+			rs = statement.executeQuery("SELECT PublicKey FROM user WHERE UserID = '" + id + "';");
+
+			if (!rs.next()) {
+				publicKey = "User does not exist";
+			}
+			else {
+				publicKey = rs.getString(1);
+			}
+		}
+		catch (Exception e) {
+			System.out.println(e);
+		}
+		finally {
+			if (rs != null) {
+				try {
+					rs.close();
+				} catch (Exception e) {}
+				rs = null;
+			}
+			if (statement != null) {
+				try {
+					statement.close();
+				} catch (Exception e) {}
+				statement = null;
+			}
+			if (con != null) {
+				try {
+					con.close();
+				} catch (Exception e) {}
+				con = null;
+			}
+			return publicKey;
+		}
+	}
+
 	public static ArrayList<Message> getMessages(String receiver) {
 		Connection con=null;
 		Statement statement=null;
@@ -133,7 +182,7 @@ public class DBAccess {
 			rs = statement.executeQuery("SELECT * FROM message WHERE ReceiverID = '" + receiver + "';");
 
 			while (rs.next()) {
-				Message msg = new Message(rs.getString(1), rs.getString(2), rs.getString(3), rs.getTimestamp(4), rs.getTimestamp(5), rs.getInt(6), rs.getInt(7), rs.getInt(8));
+				Message msg = new Message(rs.getString(1), rs.getString(2), rs.getString(3), rs.getTimestamp(4), rs.getInt(5), rs.getInt(6), rs.getInt(7), rs.getInt(8));
 				messages.add(msg);
 			}
 		}
@@ -318,7 +367,7 @@ public class DBAccess {
 	}
 	
 	public static boolean addMessage(String sender, String receiver
-		, String content, Timestamp time2read, int messageType
+		, String content, int time2read, int messageType
 		, int messageID) {
 		Connection con=null;
 		Statement statement=null;
@@ -329,7 +378,7 @@ public class DBAccess {
 			con = DriverManager.getConnection(
 				"jdbc:mysql://localhost/server?autoReconnect=true&useSSL=false", "java", "lugubr!ous19m1en");
 			Timestamp currentTime = new Timestamp(System.currentTimeMillis());
-			String sqlComm = "INSERT INTO message VALUES ('" + sender + "', '" + receiver + "', '" + content + "', '" + currentTime.toString() + "', '" + time2read.toString() + "', " + messageType + ", " + messageID + ", NULL);";
+			String sqlComm = "INSERT INTO message VALUES ('" + sender + "', '" + receiver + "', '" + content + "', '" + currentTime.toString() + "', '" + time2read + "', " + messageType + ", " + messageID + ", NULL);";
 			statement = con.createStatement();
 			
 			statement.executeUpdate(sqlComm);
