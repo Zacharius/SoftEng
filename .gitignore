@@ -43,3 +43,5 @@ captures/
 SMAServer/.idea
 SMAServer/SMAServer.iml
 SMAServer/out/
+SMAServer/lib/
+SMAServer/src/META-INF/

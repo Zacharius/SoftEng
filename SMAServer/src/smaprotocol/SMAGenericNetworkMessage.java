@@ -1,5 +1,7 @@
 package smaprotocol;
 
+import java.sql.Time;
+import java.sql.Timestamp;
 import java.util.Date;
 
 /**
@@ -8,10 +10,10 @@ import java.util.Date;
 public class SMAGenericNetworkMessage {
     private int messageType;
     private int  messageID;
-    private Date timestamp;
+    private long timestamp;
     private String senderID;
 
-    public SMAGenericNetworkMessage(int messageType, int messageID, Date timestamp, String senderID){
+    public SMAGenericNetworkMessage(int messageType, int messageID, long timestamp, String senderID){
         this.messageType = messageType;
         this.messageID = messageID;
         this.timestamp = timestamp;
@@ -23,7 +25,7 @@ public class SMAGenericNetworkMessage {
     public int getMessageID(){
         return this.messageID;
     }
-    public Date getTimestamp() { return this.timestamp; }
+    public long getTimestamp() { return this.timestamp; }
     public String getSenderID(){
         return this.senderID;
     }
