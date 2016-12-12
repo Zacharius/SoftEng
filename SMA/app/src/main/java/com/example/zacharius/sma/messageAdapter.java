@@ -77,12 +77,14 @@ public class messageAdapter extends BaseAdapter {
             holder.sent.setText(messList.get(position).getContent());
             holder.sent.setBackgroundColor(Color.parseColor("#3366ff"));
             holder.sent.setGravity(Gravity.LEFT);
+            holder.sent.setTextColor(Color.BLACK);
         }
 
         else if(getItemViewType(position)==1){
             holder.received.setText(messList.get(position).getContent());
             holder.received.setBackgroundColor(Color.parseColor("#00ff00"));
             holder.received.setGravity(Gravity.RIGHT);
+            holder.received.setTextColor(Color.BLACK);
         }
         return row;
 
