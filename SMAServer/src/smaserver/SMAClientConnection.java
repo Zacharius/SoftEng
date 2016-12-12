@@ -60,7 +60,10 @@ class SMAClientConnection implements Runnable {
             printServerLogMessage("client disconnected without authenticating");
         }
 
-        this.clientOutPutThread.interrupt();
+        // Interrupt the thread if it was created.
+        if(this.clientID != null) {
+            this.clientOutPutThread.interrupt();
+        }
     }
 
     private void listenForIncomingRequests()throws IOException{
