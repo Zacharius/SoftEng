@@ -67,19 +67,21 @@ import java.util.concurrent.ThreadLocalRandom;
                 System.out.println("System is shutting down.");
                 System.exit(0);
                 break;
-            case "/changepassword":
-                if(arguments.length != 3){
+            case "/resetpassword":
+                if(arguments.length != 2){
                     // printChangePasswordUsage();
                 }else{
-                    if(DBAccess.changePassword(arguments[1], arguments[2])){
+                    String password = generatePassword();
+                    if(DBAccess.changePassword(arguments[1], password)){
                         System.out.println("Password for " + arguments[1] + " updated successfully.");
+                        System.out.println("Password: " + password);
                     }else{
                         System.out.println("Could not add user.");
                     }
                 }
                 break;
             default:
-                System.out.println("Hello admin");
+                System.out.println("Invalid console input. Please input a valid command or type /help for more information.\n");
         }
     }
 
@@ -132,10 +134,10 @@ import java.util.concurrent.ThreadLocalRandom;
      */
     private void printHelp(){
         System.out.println("\nSMA Commands:\n" +
-                           "    /help                                       shows a list of commands and their usage\n" +
-                           "    /adduser [user ID]                          adds a user with the ID specified\n" +
-                           "    /shutdown                                   gracefully shut down the server\n" +
-                           "    /togglelog                                  turn console logging on and off\n" +
-                           "    /changepassword [user ID] [new password]    change the password for the given user\n");
+                           "    /help                       shows a list of commands and their usage\n" +
+                           "    /adduser [user ID]          adds a user with the ID specified\n" +
+                           "    /shutdown                   gracefully shut down the server\n" +
+                           "    /togglelog                  turn console logging on and off\n" +
+                           "    /resetpassword [user ID]    change the password for the given user\n");
     }
 }
