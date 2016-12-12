@@ -3,6 +3,7 @@ package smaserver;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Created by elijah on 12/1/2016.
@@ -47,11 +48,13 @@ import java.io.InputStreamReader;
                 printHelp();
                 break;
             case "/adduser":
-                if(arguments.length != 3){
+                if(arguments.length != 2){
                     // printAddUserUsage();
                 }else{
-                    if(DBAccess.addUser(arguments[1], arguments[2])){
+                    String passsword = generatePassword();
+                    if(DBAccess.addUser(arguments[1], passsword)){
                         System.out.println("A new user profile for " + arguments[1] + " was successfully created.");
+                        System.out.println("Password: " + passsword);
                     }else{
                         System.out.println("Could not create a new user profile.");
                     }
@@ -81,12 +84,56 @@ import java.io.InputStreamReader;
     }
 
     /**
+     * Generate a random password of length 10 containing at least one each of an uppercase letter, lowercase letter,
+     * and digit.
+     * @return a String value containing the new password
+     */
+    private String generatePassword(){
+        StringBuilder pwd = new StringBuilder(10);
+        boolean contains_upper, contains_lower, contains_digit;
+        contains_digit = contains_lower = contains_upper = false;
+        int rand;
+        for(int length = 0; length < 10; length++) {
+            if (length >= 8 && (!contains_upper || !contains_lower || !contains_digit)) {
+                if (!contains_upper) {
+                    contains_upper = true;
+                    pwd.append((char) (ThreadLocalRandom.current().nextInt(1, 27) + 64));
+                } else if (!contains_lower) {
+                    contains_lower = true;
+                    pwd.append((char) (ThreadLocalRandom.current().nextInt(1, 27) + 96));
+                } else if (!contains_digit) {
+                    contains_digit = true;
+                    pwd.append((char) (ThreadLocalRandom.current().nextInt(0, 10) + 48));
+                    break;
+                }
+            } else {
+                switch (ThreadLocalRandom.current().nextInt(1, 4)) {
+                    case 1:
+                        contains_digit = true;
+                        pwd.append((char) (ThreadLocalRandom.current().nextInt(0, 10) + 48));
+                        break;
+                    case 2:
+                        contains_upper = true;
+                        pwd.append((char) (ThreadLocalRandom.current().nextInt(1, 27) + 64));
+                        break;
+                    case 3:
+                        contains_lower = true;
+                        pwd.append((char) (ThreadLocalRandom.current().nextInt(1, 27) + 96));
+                        break;
+                    default:
+                }
+            }
+        }
+
+        return pwd.toString();
+    }
+    /**
      * Prints all the help info for admin console.
      */
     private void printHelp(){
         System.out.println("\nSMA Commands:\n" +
                            "    /help                                       shows a list of commands and their usage\n" +
-                           "    /adduser [user ID] [password]               adds a user with the ide and password specified\n" +
+                           "    /adduser [user ID]                          adds a user with the ID specified\n" +
                            "    /shutdown                                   gracefully shut down the server\n" +
                            "    /togglelog                                  turn console logging on and off\n" +
                            "    /changepassword [user ID] [new password]    change the password for the given user\n");
