@@ -94,7 +94,7 @@ public class ContactListActivity extends AppCompatActivity {
 
 
         //bind contactList to list, an ArrayAdapter
-        list = new ArrayAdapter<>(getApplicationContext(), android.R.layout.simple_list_item_1, contactList);
+        list = new ArrayAdapter<>(getApplicationContext(), R.layout.simple_list_item, contactList);
 
 
         //bind list(arrayadapter) to contactView
@@ -172,7 +172,7 @@ public class ContactListActivity extends AppCompatActivity {
 
 
         //bind contactList to list, an ArrayAdapter
-        list = new ArrayAdapter<>(getApplicationContext(), android.R.layout.simple_list_item_1, contactList);
+        list = new ArrayAdapter<>(getApplicationContext(), R.layout.simple_list_item, contactList);
 
 
         //bind list(arrayadapter) to contactView

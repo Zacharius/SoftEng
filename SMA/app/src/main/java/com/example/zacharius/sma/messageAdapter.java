@@ -50,14 +50,20 @@ public class messageAdapter extends BaseAdapter {
     @Override
     public int getItemViewType(int position){
         Message message = messList.get(position);
-        // 0 = sent
+        /*// 0 = sent
         if(message.getMsgType() == 1){
             return 0;
         // 1 = received
         }else if(message.getMsgType() == 0){
             return 1;
+        }*/
+
+        if(message.getMsgType() == 1 || message.getMsgType() == 0)
+        {
+            return message.getMsgType();
         }
-        return -1;
+        else
+            return -1;
     }
 
     @Override

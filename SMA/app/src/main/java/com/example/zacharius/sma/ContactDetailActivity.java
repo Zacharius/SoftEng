@@ -1,7 +1,9 @@
 package com.example.zacharius.sma;
 
+import android.app.Activity;
 import android.content.ComponentName;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.database.Cursor;
@@ -24,14 +26,17 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 
 
-public class ContactDetailActivity extends AppCompatActivity
+public class ContactDetailActivity extends Activity
 {
     TextView contactName;
     DatabaseHelper mDbHelper;
     SQLiteDatabase db;
-    ArrayList<Message> messages = new ArrayList<>();
+     static ArrayList<Message> messages = new ArrayList<>();
     private ServerComm server;
     Contact con;
+    static Context context;
+    static View view;
+    static String name;
     long currentSystime = System.currentTimeMillis();
 
     private ServiceConnection connector = new ServiceConnection()
@@ -54,10 +59,16 @@ public class ContactDetailActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_contact_detail);
+         setContentView(R.layout.activity_contact_detail);
+        ContactDetailActivity.view = findViewById(android.R.id.content);
+
 
         Intent intent = getIntent();
-        String name = intent.getStringExtra("NAME");
+        name = intent.getStringExtra("NAME");
+
+        Intent service = new Intent(this, ServerComm.class);
+        bindService(service, connector, Context.BIND_AUTO_CREATE);
+        ContactDetailActivity.context = getApplicationContext();
 
         //Contact con = new Contact("this is the id", name);
         contactName = (TextView) findViewById(R.id.contactName);
@@ -142,19 +153,20 @@ public class ContactDetailActivity extends AppCompatActivity
             long messageID = c.getInt(c.getColumnIndexOrThrow(DatabaseContract.MessageTable.COLUMN_MSGID));
             Message info = new Message(mess, sendID, timerec, timeread, timeout,messageID, messageType );
             message.add(info);
+            c.moveToNext();
         }
 
         return message;
     }
 
-    public void displayMessages(){
+    public static void displayMessages(){
         //ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.select_dialog_item, messages);
-        messageAdapter adapter = new messageAdapter(this, messages);
-        ListView LV = (ListView)findViewById(R.id.contactMessages);
+        messageAdapter adapter = new messageAdapter(context, messages);
+        ListView LV = (ListView)view.findViewById(R.id.contactMessages);
         LV.setAdapter(adapter);
     }
 
-    public void onClickSend(){
+    public void onClickSend(View v){
         EditText sendMessage = (EditText) findViewById(R.id.editMessage);
         String sendmgs = sendMessage.getText().toString();
         server.sendText(con.getID(), 600, sendmgs);
@@ -177,11 +189,19 @@ public class ContactDetailActivity extends AppCompatActivity
 
         //adding message to messages arraylist
         Message sentmessage = new Message(sendmgs, con.getID(), currentSystime, currentSystime, 600, currentSystime, 0 );
-        messages.add(sentmessage);
+        messages.add(0, sentmessage);
         displayMessages();
         sendMessage.setText("");
         db = mDbHelper.getReadableDatabase();
 
+
+
     }
 
+    @Override
+    protected void onDestroy()
+    {
+        super.onDestroy();
+        unbindService(connector);
+    }
 }

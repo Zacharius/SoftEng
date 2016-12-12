@@ -37,7 +37,7 @@
         android:layout_weight="15"
         android:layout_gravity="right"
         android:layout_toRightOf="@+id/editMessage"
-        android:id="@+id/button"
+        android:id="@+id/sendText"
         android:text="Send"
         android:onClick="onClickSend"
        />

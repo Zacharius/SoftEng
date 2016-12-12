@@ -324,9 +324,11 @@ public class ServerComm extends Service
                                     Toast.makeText(this, "Denied Contact " + id, Toast.LENGTH_SHORT).show();
                                 }
                                 break;
-                            case 6://receive message
+                            case 7://receive message
                                 db = helper.getWritableDatabase();
                                 values = new ContentValues();
+
+                                values.put(DatabaseContract.MessageTable.COLUMN_TYPE, "1");
 
                                 id = object.getString("senderID");
                                 values.put(DatabaseContract.MessageTable.COLUMN_CONTACT, id);
@@ -338,10 +340,13 @@ public class ServerComm extends Service
                                 values.put(DatabaseContract.MessageTable.COLUMN_CONTENT, content);
 
                                 String timeout = object.getString("timeout");
-                                values.put(DatabaseContract.MessageTable.COLUMN_CONTENT, timeout);
+                                values.put(DatabaseContract.MessageTable.COLUMN_TIMEOUT, timeout);
 
                                 db.insert(DatabaseContract.MessageTable.TABLE_NAME, null, values);
                                 db.close();
+
+                                if(ContactDetailActivity.name == id)
+                                    ContactDetailActivity.displayMessages();
                                 break;
                             case 9://accepted contact request
                                 status = object.getBoolean("status");

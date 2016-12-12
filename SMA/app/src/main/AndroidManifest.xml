@@ -18,9 +18,14 @@
             </intent-filter>
         </activity>
         <activity android:name=".ContactListActivity"/>
-        <activity android:name=".ContactDetailActivity"/>
+
+        <activity android:name=".ContactDetailActivity"
+                  android:windowSoftInputMode="adjustPan"/>
+
         <activity android:name=".OptionsActivity"/>
+
         <activity android:name=".ResetPasswordActivity"/>
+
         <activity
             android:name=".DeleteContactActivity"
             android:parentActivityName=".OptionsActivity">
