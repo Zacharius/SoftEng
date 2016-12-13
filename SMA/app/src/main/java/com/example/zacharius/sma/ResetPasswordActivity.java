@@ -67,21 +67,37 @@ public class ResetPasswordActivity extends AppCompatActivity {
         newPassword = nPassword.getText().toString();
         passwordConfirm = cnPassword.getText().toString();
         Pattern pattern = Pattern.compile("\\s");
+        Pattern lowAlph = Pattern.compile("[a-z]+");
+        Pattern upAlph = Pattern.compile("[A-Z]+");
+        Pattern num = Pattern.compile("[0-9]+");
+        Pattern invalidChar = Pattern.compile("[',/.<>\\[\\]:;`~+=\\\\()_\"{}|-]");
+        Pattern symbol = Pattern.compile("[!@#$%^&*?]+");
+        Matcher invalidMatch = invalidChar.matcher(newPassword);
+        Matcher symbolMatch = symbol.matcher(newPassword);
+        Matcher lowAlphaMatch = lowAlph.matcher(newPassword);
+        Matcher upAlphaMatch = upAlph.matcher(newPassword);
         Matcher matcher = pattern.matcher(newPassword);
+        Matcher numMatch = num.matcher(newPassword);
+        boolean lowAlphaOK = lowAlphaMatch.find();
+        boolean upAlphOK = upAlphaMatch.find();
+        boolean numOK = numMatch.find();
         boolean found = matcher.find();
+        boolean symbolOK = symbolMatch.find();
+        boolean invalidOK = invalidMatch.find();
 
 
 
         if(newPassword.equals(passwordConfirm) &&
                 newPassword.length() <= 32 &&
                 newPassword.length() >= 8  &&
-                 !found){
+                 !found && numOK && lowAlphaOK && upAlphOK && symbolOK && !invalidOK){
             server.changePassword(newPassword);
             Intent i = new Intent(view.getContext(), ContactListActivity.class);
             startActivity(i);
         }
         else{
-            Toast.makeText(view.getContext(), "Invalid entry please try again\n",
+            Toast.makeText(view.getContext(), "Password must be at least 8 characters and contain one Uppercase, one Lowercase, one Number and " +
+                    "one of the following symbols !@#$%^&*?\n",
                     Toast.LENGTH_SHORT).show();
             nPassword.setText("");
             cnPassword.setText("");
