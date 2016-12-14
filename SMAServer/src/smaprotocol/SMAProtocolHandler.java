@@ -94,7 +94,7 @@ public class SMAProtocolHandler {
                 }
                 break;
             case 4:
-                System.out.println("[PROTOCOL LOG}: handling contact request");
+                System.out.println("[PROTOCOL LOG]: handling contact request");
                 printClientLogMessage(clientID, "handling contact request");
                 return sendContactRequest(input, clientID);
 
@@ -104,7 +104,7 @@ public class SMAProtocolHandler {
 
             // Type 8 indicates the user is changing their public key.
             case 8:
-                System.out.println("[PROTOCOL LOG}: changing public key");
+                System.out.println("[PROTOCOL LOG]: changing public key");
                 SMAChangePublicKeyRequest newPublicKey = gson.fromJson(input, SMAChangePublicKeyRequest.class);
                 if(DBAccess.changePubKey(clientID, newPublicKey.getPublicKey())){
                     status = true;
@@ -199,7 +199,7 @@ public class SMAProtocolHandler {
      */
     public String getOutgoingMessage(Message message){
         String output = null;
-        System.out.println("{PROTOCOL LOG]: message is of type " + message.getMessageType());
+        System.out.println("[PROTOCOL LOG]: message is of type " + message.getMessageType());
         switch (message.getMessageType()){
 
             // Type 7 is a forwarded text message;

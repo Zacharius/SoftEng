@@ -1,0 +1,31 @@
+On the machine which will host both the SMA databases and the server do the
+following:
+
+1. Install and run a copy of MySQL.
+
+2. Create a database for the application to interface with.
+
+3. Add the appropriate tables with the following SQL commands.
+
+
+To compile the SMA server from source:
+1. Import SoftEng/SMAServer/src into your preferred development environment.
+
+2. Add the following two Maven dependencies or import the appropriate .jar files
+for your environment:
+
+https://mvnrepository.com/artifact/com.google.code.gson/gson/2.8.0
+https://mvnrepository.com/artifact/mysql/mysql-connector-java/5.1.6
+
+3. Build a .jar file with all included dependencies from the project with
+SoftEng/SMAserver/src/smaserver/SMAserver.java as the main file.
+
+To run the server:
+1. Transfer the built .jar file to the server hosting the MySQL database.
+
+2. Execute the .jar file with the following command:
+
+java -jar SMAServer.jar
+
+When running the server:
+1. Type /help to view all available commands including how one might add a user.
