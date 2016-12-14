@@ -114,6 +114,8 @@ import java.util.concurrent.ThreadLocalRandom;
      */
     private String generatePassword(){
         int random_length = ThreadLocalRandom.current().nextInt(10, 33);
+        // TODO: It's not longer random. :(
+        random_length = 10;
         StringBuilder pwd = new StringBuilder(random_length);
 
         boolean contains_upper, contains_lower, contains_digit;
