@@ -44,12 +44,16 @@ public class ContactListActivity extends AppCompatActivity {
 
         };
 
+
+        String selection = DatabaseContract.ContactTable.COLUMN_STATUS + "= ?";
+        String[] selectionArgs = { "0" };
+
         // query the data base for contacts
         Cursor c = db.query(
                 DatabaseContract.ContactTable.TABLE_NAME,           // the table to query
                 projection,                                         // the columns to return
-                null,                                               // the columns for the WHERE clause
-                null,                                               // the values for the WHERE clause
+                selection,                                               // the columns for the WHERE clause
+                selectionArgs,                                               // the values for the WHERE clause
                 null,                                               // grouping of the rows
                 null,                                               // filter by row
                 null                                                // sort order
@@ -165,6 +169,7 @@ public class ContactListActivity extends AppCompatActivity {
                 Log.d("ContactListActivity", "contact " + c.getString(c.getColumnIndex(DatabaseContract.ContactTable.COLUMN_USERID))+ " has no nickname, excluding from listview");
             }
             else{
+
                 contactList.add(nextContact);
             }
             c.moveToNext();
@@ -181,6 +186,18 @@ public class ContactListActivity extends AppCompatActivity {
 
         //bind list(arrayadapter) to contactView
         contactsView.setAdapter(list);
+
+        contactsView.setOnItemClickListener(new AdapterView.OnItemClickListener()
+        {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id)
+            {
+                Intent intent = new Intent(getApplicationContext(), ContactDetailActivity.class);
+                intent.putExtra("NAME", contactList.get(position));
+                startActivity(intent);
+
+            }
+        });
     }
 
     /*

@@ -87,18 +87,7 @@ public class OptionsActivity extends Activity
                     public void onClick(DialogInterface dialog, int which) {
                         String contact = addContact.getText().toString();
                         Log.d("OptionsActivity", "Requesting to add contact " + contact );
-                        server.contactRequest(contact);
 
-                        mDbHelper = new DatabaseHelper(getApplicationContext());
-
-                        db = mDbHelper.getReadableDatabase();
-
-                        ContentValues values = new ContentValues();
-
-                        values.put(DatabaseContract.ContactTable.COLUMN_USERID, contact);
-                        values.put(DatabaseContract.ContactTable.COLUMN_STATUS, 1);
-
-                        db.insert(DatabaseContract.ContactTable.TABLE_NAME, null, values);
                     }
                 });
                 Dialog dialog = alertBuilder.create();

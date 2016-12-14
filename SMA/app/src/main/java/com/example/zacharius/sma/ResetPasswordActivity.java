@@ -27,7 +27,21 @@ public class ResetPasswordActivity extends AppCompatActivity {
     private String newPassword;
     private String passwordConfirm;
     public ServerComm server;
+    ServiceConnection connector = new ServiceConnection()
+    {
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder iBinder)
+        {
+            ServerComm.ServerBinder binder = (ServerComm.ServerBinder) iBinder;
+            server = binder.getServer();
+        }
 
+        @Override
+        public void onServiceDisconnected(ComponentName componentName)
+        {
+
+        }
+    };
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -36,26 +50,19 @@ public class ResetPasswordActivity extends AppCompatActivity {
 
         Log.d("ResetPasswordActivity", "Activity starting");
 
-        ServiceConnection connector = new ServiceConnection()
-        {
-            @Override
-            public void onServiceConnected(ComponentName componentName, IBinder iBinder)
-            {
-                ServerComm.ServerBinder binder = (ServerComm.ServerBinder) iBinder;
-                server = binder.getServer();
-            }
 
-            @Override
-            public void onServiceDisconnected(ComponentName componentName)
-            {
-
-            }
-        };
 
         Intent intent = new Intent(this, ServerComm.class);
         bindService(intent, connector, Context.BIND_AUTO_CREATE);
 
 
+    }
+
+    @Override
+    protected void onDestroy()
+    {
+        super.onDestroy();
+        unbindService(connector);
     }
 
     public void onClickResetPW(View view){

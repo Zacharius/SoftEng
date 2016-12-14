@@ -432,8 +432,7 @@ public class ServerComm extends Service
                                     db.delete(DatabaseContract.ContactTable.TABLE_NAME, selection, selectionArgs);
                                     db.close();
                                 }
-
-
+                                break;
                             default://unknown message
                                 Log.d("ServerListener", "Unknwon Message from Server");
                                 Toast.makeText(this, "Unknown Message from server", Toast.LENGTH_SHORT).show();
