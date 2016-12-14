@@ -87,6 +87,7 @@ public class OptionsActivity extends Activity
                     public void onClick(DialogInterface dialog, int which) {
                         String contact = addContact.getText().toString();
                         Log.d("OptionsActivity", "Requesting to add contact " + contact );
+                       server.contactRequest(contact);
 
                     }
                 });
