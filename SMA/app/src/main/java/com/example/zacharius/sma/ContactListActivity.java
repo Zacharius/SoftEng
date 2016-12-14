@@ -41,6 +41,7 @@ public class ContactListActivity extends AppCompatActivity {
                 DatabaseContract.ContactTable.COLUMN_USERID,
                 DatabaseContract.ContactTable.COLUMN_NICKNAME,
 
+
         };
 
         // query the data base for contacts
@@ -135,12 +136,15 @@ public class ContactListActivity extends AppCompatActivity {
 
         };
 
+        String selection = DatabaseContract.ContactTable.COLUMN_STATUS + "= ?";
+        String[] selectionArgs = { "0" };
+
         // query the data base for contacts
         Cursor c = db.query(
                 DatabaseContract.ContactTable.TABLE_NAME,           // the table to query
                 projection,                                         // the columns to return
-                null,                                               // the columns for the WHERE clause
-                null,                                               // the values for the WHERE clause
+                selection,                                               // the columns for the WHERE clause
+                selectionArgs,                                               // the values for the WHERE clause
                 null,                                               // grouping of the rows
                 null,                                               // filter by row
                 null                                                // sort order
