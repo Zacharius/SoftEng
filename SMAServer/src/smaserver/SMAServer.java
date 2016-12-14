@@ -9,7 +9,6 @@ import java.util.List;
  * Created by elijah on 11/13/2016.
  */
 public class SMAServer {
-    // TODO: modify to take port number via command line
     private static int portNumber = 4269;
     private static ServerSocket serverSocket;
     private static Socket clientSocket = null;

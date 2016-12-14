@@ -41,10 +41,11 @@ class SMAClientConnectionOut implements Runnable {
         // The actions must be performed in a loop.
         while(!interrupted()){
             // Messages for this client need to be fetched from the server.
-            printClientLogMessage("fetching user messages from server");
+            // printClientLogMessage("fetching user messages from server");
             ArrayList<Message> outgoingMessages = DBAccess.getMessages(clientID);
-            printClientLogMessage(outgoingMessages.size() + " messages found");
-
+            if(outgoingMessages.size() > 0) {
+                printClientLogMessage(outgoingMessages.size() + " messages found for " + this.clientID);
+            }
             // In a loop, each of these needs to be written to the client.
             try {
 

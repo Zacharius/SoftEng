@@ -43,19 +43,19 @@ import java.util.concurrent.ThreadLocalRandom;
      */
     private void processCommand(String input){
         String[] arguments = input.split("\\s+");
-        switch(arguments[0]){
+        switch(arguments[0]) {
             case "/help":
                 printHelp();
                 break;
             case "/adduser":
-                if(arguments.length != 2){
+                if (arguments.length != 2) {
                     // printAddUserUsage();
-                }else{
+                } else {
                     String passsword = generatePassword();
-                    if(DBAccess.addUser(arguments[1], passsword)){
+                    if (DBAccess.addUser(arguments[1], passsword)) {
                         System.out.println("A new user profile for " + arguments[1] + " was successfully created.");
                         System.out.println("Password: " + passsword);
-                    }else{
+                    } else {
                         System.out.println("Could not create a new user profile.");
                     }
                 }
@@ -68,35 +68,62 @@ import java.util.concurrent.ThreadLocalRandom;
                 System.exit(0);
                 break;
             case "/resetpassword":
-                if(arguments.length != 2){
+                if (arguments.length != 2) {
                     // printChangePasswordUsage();
-                }else{
+                } else {
                     String password = generatePassword();
-                    if(DBAccess.changePassword(arguments[1], password)){
+                    if (DBAccess.changePassword(arguments[1], password)) {
                         System.out.println("Password for " + arguments[1] + " updated successfully.");
                         System.out.println("Password: " + password);
-                    }else{
+                    } else {
                         System.out.println("Could not add user.");
                     }
                 }
                 break;
+            case "/randompassword":
+                System.out.println("Here's a random password: " + generatePassword() + "\n");
+                break;
+            case "/randompasswords":
+                if (arguments.length != 2) {
+                    // printRandompasswordsUsage();
+                } else {
+                    int count = Integer.parseInt(arguments[1]);
+                    if (count <= 0) {
+                        System.out.println("The number of passwords to print must be a positive integer greater than " +
+                                "zero.");
+                    } else {
+                        System.out.println("Here's " + count + " random passwords.");
+                        for (int c = 0; c < count; c++) {
+                            System.out.println(generatePassword());
+                        }
+                        System.out.println();
+                    }
+                }
+                break;
             default:
-                System.out.println("Invalid console input. Please input a valid command or type /help for more information.\n");
+                System.out.println("Invalid console input. Please input a valid command or type /help for more " +
+                        "information.\n");
         }
     }
 
     /**
-     * Generate a random password of length 10 containing at least one each of an uppercase letter, lowercase letter,
+     * Generate a random password of at least length 10 but not exceeding 32 containing at least one each of an
+     * uppercase letter, lowercase letter,
      * and digit.
      * @return a String value containing the new password
      */
     private String generatePassword(){
-        StringBuilder pwd = new StringBuilder(10);
+        int random_length = ThreadLocalRandom.current().nextInt(10, 33);
+        // TODO: It's not longer random. :(
+        random_length = 10;
+        StringBuilder pwd = new StringBuilder(random_length);
+
         boolean contains_upper, contains_lower, contains_digit;
         contains_digit = contains_lower = contains_upper = false;
+
         int rand;
-        for(int length = 0; length < 10; length++) {
-            if (length >= 8 && (!contains_upper || !contains_lower || !contains_digit)) {
+        for(int length = 0; length < random_length; length++) {
+            if (length >= random_length - 2 && (!contains_upper || !contains_lower || !contains_digit)) {
                 if (!contains_upper) {
                     contains_upper = true;
                     pwd.append((char) (ThreadLocalRandom.current().nextInt(1, 27) + 64));
@@ -106,7 +133,6 @@ import java.util.concurrent.ThreadLocalRandom;
                 } else if (!contains_digit) {
                     contains_digit = true;
                     pwd.append((char) (ThreadLocalRandom.current().nextInt(0, 10) + 48));
-                    break;
                 }
             } else {
                 switch (ThreadLocalRandom.current().nextInt(1, 4)) {
@@ -129,6 +155,8 @@ import java.util.concurrent.ThreadLocalRandom;
 
         return pwd.toString();
     }
+
+
     /**
      * Prints all the help info for admin console.
      */
@@ -138,6 +166,8 @@ import java.util.concurrent.ThreadLocalRandom;
                            "    /adduser [user ID]          adds a user with the ID specified\n" +
                            "    /shutdown                   gracefully shut down the server\n" +
                            "    /togglelog                  turn console logging on and off\n" +
-                           "    /resetpassword [user ID]    change the password for the given user\n");
+                           "    /resetpassword [user ID]    change the password for the given user\n" +
+                           "    /randompassword             shows a random password\n" +
+                           "    /randompasswords [number]   prints [number] random passwords each on their own line");
     }
 }
